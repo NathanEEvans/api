@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  #%L
+  Stormcloud IDE - API - Web
+  %%
+  Copyright (C) 2012 - 2013 Stormcloud IDE
+  %%
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as
+  published by the Free Software Foundation, either version 3 of the 
+  License, or (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public 
+  License along with this program.  If not, see
+  <http://www.gnu.org/licenses/gpl-3.0.html>.
+  #L%
+  -->
+
+<web-app version="2.5" 
+         xmlns="http://java.sun.com/xml/ns/javaee" 
+         xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    
+    <display-name>Stormcloud Server</display-name>
+    
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+    
+    <servlet>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:applicationContext.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    
+    <filter>
+        <filter-name>UserFilter</filter-name>
+        <filter-class>com.stormcloud.filter.UserFilter</filter-class>
+    </filter>
+    
+    <filter-mapping>
+        <filter-name>UserFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>DispatcherServlet</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+    
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Registered</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+            <http-method>GET</http-method>
+            <http-method>POST</http-method>
+            <http-method>DELETE</http-method>
+            <http-method>PUT</http-method>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>REGISTERED_USER</role-name>
+        </auth-constraint>
+    </security-constraint>
+    
+    <login-config>
+        <auth-method>BASIC</auth-method>
+    </login-config>
+    
+    <security-role>
+        <description>Registered user with existing Account</description>
+        <role-name>REGISTERED_USER</role-name>
+    </security-role>
+    
+    <!--
+        This directive is here so we avaoid sending a 401 back to the
+        browser which causes the browser to popup the ugly basic auth
+        login screen.
+    -->
+    <error-page>
+        <error-code>401</error-code>
+        <location>/dummy</location>
+    </error-page>
+
+</web-app>

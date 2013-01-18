@@ -1,0 +1,12 @@
+.settings
+.project
+target
+catalog.xml
+.DS_Store
+
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear

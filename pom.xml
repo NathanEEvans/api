@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <parent>
+        <groupId>com.stormcloud.ide</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0</version>
+    </parent>
+    
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.stormcloud.ide</groupId>
+    <artifactId>api</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Stormcloud IDE - API</name>
+    
+    <modules>
+        <module>core</module>
+        <module>git</module>
+        <module>maven</module>
+        <module>filesystem</module>
+        <module>web</module>
+        <module>tomcat</module>
+        <module>debug</module>
+        <module>java</module>
+    </modules>
+    
+    <dependencyManagement>
+        
+        <dependencies>
+        
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>model</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+        
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-git</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+        
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-core</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+                
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-maven</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+        
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-filesystem</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+      
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-tomcat</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+      
+            <dependency>
+                <groupId>com.stormcloud.ide</groupId>
+                <artifactId>stormcloud-api-java</artifactId>
+                <version>1.0-SNAPSHOT</version>
+            </dependency>
+      
+            
+        </dependencies>
+        
+    </dependencyManagement>
+    
+</project>
