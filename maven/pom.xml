@@ -19,11 +19,6 @@
     
         <dependency>
             <groupId>com.stormcloud.ide</groupId>
-            <artifactId>model</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.stormcloud.ide</groupId>
             <artifactId>stormcloud-api-core</artifactId>
         </dependency>
         

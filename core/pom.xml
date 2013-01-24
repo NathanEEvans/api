@@ -15,13 +15,30 @@
     <version>1.0-SNAPSHOT</version>
     <name>Stormcloud IDE - API - Core</name>
     
+    <build>
+    
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>0.8.2</version>
+                <configuration>
+                    <schemaDirectory>src/main/resources/xsd</schemaDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    
+    </build>
+    
     <dependencies>
     
-        <dependency>
-            <groupId>com.stormcloud.ide</groupId>
-            <artifactId>model</artifactId>
-        </dependency>
-        
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
