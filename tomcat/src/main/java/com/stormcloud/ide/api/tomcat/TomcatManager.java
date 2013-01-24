@@ -1,25 +1,19 @@
 package com.stormcloud.ide.api.tomcat;
 
 /*
- * #%L
- * Stormcloud IDE - API - Tomcat
- * %%
- * Copyright (C) 2012 - 2013 Stormcloud IDE
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
+ * #%L Stormcloud IDE - API - Tomcat %% Copyright (C) 2012 - 2013 Stormcloud IDE
+ * %% This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
@@ -27,8 +21,11 @@ import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.model.filesystem.Item;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -36,7 +33,51 @@ import java.util.Comparator;
  */
 public class TomcatManager implements ITomcatManager {
 
+    private Logger LOG = Logger.getLogger(getClass());
     private IStormCloudDao dao;
+
+    @Override
+    public int deploy(String path) throws Exception {
+
+        LOG.info("Deploying " + path);
+
+        User user = dao.getUser(RemoteUser.get().getUserName());
+
+        // check if there is a build product
+        File target = new File(path + "/target");
+
+        FilenameFilter filter = new FilenameFilter() {
+
+            @Override
+            public boolean accept(File file, String string) {
+
+                // don't show hidden files
+                if (string.endsWith(".war")) {
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        LOG.info("Checking " + target.getAbsolutePath() + " for deployable products.");
+
+        File[] war = target.listFiles(filter);
+
+
+        LOG.info("Found " + war.length + " deployable product(s).");
+
+        if (war.length != 1) {
+            return 1;
+        }
+
+        LOG.info("Deploying to " + user.getHomeFolder() + "/tomcat/latest/webapps");
+
+        File deployable = war[0];
+
+        FileUtils.moveFileToDirectory(deployable.getAbsoluteFile(), new File(user.getHomeFolder() + "/tomcat/latest/webapps"), false);
+
+        return 0;
+    }
 
     @Override
     public Item getTomcat() {
@@ -95,6 +136,7 @@ public class TomcatManager implements ITomcatManager {
         if (files != null) {
 
             Comparator comp = new Comparator() {
+
                 @Override
                 public int compare(Object o1, Object o2) {
                     File f1 = (File) o1;

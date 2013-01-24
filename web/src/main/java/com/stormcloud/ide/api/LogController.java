@@ -77,9 +77,11 @@ public class LogController {
 
         String contents;
 
+        User user = dao.getUser(RemoteUser.get().getUserName());
+
         try {
 
-            contents = FileUtils.readFileToString(new File("tomcat.log"));
+            contents = FileUtils.readFileToString(new File(user.getHomeFolder() + "/tomcat/latest/logs/catalina.out"));
 
         } catch (IOException e) {
             contents = e.getMessage();

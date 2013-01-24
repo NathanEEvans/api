@@ -1,26 +1,21 @@
 package com.stormcloud.ide.api;
 
 /*
- * #%L
- * Stormcloud IDE - API - Web
- * %%
- * Copyright (C) 2012 - 2013 Stormcloud IDE
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
+ * #%L Stormcloud IDE - API - Web %% Copyright (C) 2012 - 2013 Stormcloud IDE %%
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.model.tomcat.Deploy;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.tomcat.ITomcatManager;
 import com.stormcloud.ide.model.filesystem.Item;
@@ -32,6 +27,7 @@ import java.util.Comparator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -50,8 +46,22 @@ public class ServicesController extends BaseController {
     @Autowired
     IFilesystemManager filesystemManager;
 
-    @RequestMapping(
-    method = RequestMethod.GET,
+    @RequestMapping(value = "/tomcat/deploy",
+    method = RequestMethod.POST,
+    consumes = "application/json",
+    produces = "application/json")
+    @ResponseBody
+    public int deploy(@RequestBody Deploy deploy)
+            throws Exception {
+
+
+        LOG.info("Received Request " + deploy.getFilePath());
+
+        return tomcatManager.deploy(deploy.getFilePath());
+
+    }
+
+    @RequestMapping(method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
     public Services[] getServices() {
@@ -130,6 +140,7 @@ public class ServicesController extends BaseController {
         File m2 = new File("/filesystem/martijn/.m2");
 
         FilenameFilter filter = new FilenameFilter() {
+
             @Override
             public boolean accept(File file, String string) {
 
@@ -187,6 +198,7 @@ public class ServicesController extends BaseController {
         if (files != null) {
 
             Comparator comp = new Comparator() {
+
                 @Override
                 public int compare(Object o1, Object o2) {
                     File f1 = (File) o1;
