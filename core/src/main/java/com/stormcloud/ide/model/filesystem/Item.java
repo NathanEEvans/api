@@ -15,6 +15,7 @@ public class Item {
     private String label;
     private String type;
     private String status;
+    private String buildName;
     private Set<Item> children = new LinkedHashSet<Item>();
 
     public String getId() {
@@ -47,6 +48,14 @@ public class Item {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getBuildName() {
+        return buildName;
+    }
+
+    public void setBuildName(String buildName) {
+        this.buildName = buildName;
     }
 
     public Set<Item> getChildren() {

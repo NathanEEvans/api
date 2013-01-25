@@ -26,27 +26,27 @@ package com.stormcloud.ide.api.tomcat.exception;
  *
  * @author martijn
  */
-public class MuleManagerException extends Exception {
+public class TomcatManagerException extends Exception {
 
     /**
      * Creates a new instance of <code>MavenManagerException</code> without detail message.
      */
-    public MuleManagerException() {
+    public TomcatManagerException() {
     }
 
     /**
      * Constructs an instance of <code>MavenManagerException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public MuleManagerException(String msg) {
+    public TomcatManagerException(String msg) {
         super(msg);
     }
 
-    public MuleManagerException(Throwable thrwbl) {
+    public TomcatManagerException(Throwable thrwbl) {
         super(thrwbl);
     }
 
-    public MuleManagerException(String string, Throwable thrwbl) {
+    public TomcatManagerException(String string, Throwable thrwbl) {
         super(string, thrwbl);
     }
 }

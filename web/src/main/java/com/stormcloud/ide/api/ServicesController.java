@@ -15,9 +15,9 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-import com.stormcloud.ide.model.tomcat.Deploy;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.tomcat.ITomcatManager;
+import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.services.Services;
 import java.io.File;
@@ -27,7 +27,6 @@ import java.util.Comparator;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -46,25 +45,11 @@ public class ServicesController extends BaseController {
     @Autowired
     IFilesystemManager filesystemManager;
 
-    @RequestMapping(value = "/tomcat/deploy",
-    method = RequestMethod.POST,
-    consumes = "application/json",
-    produces = "application/json")
-    @ResponseBody
-    public int deploy(@RequestBody Deploy deploy)
-            throws Exception {
-
-
-        LOG.info("Received Request " + deploy.getFilePath());
-
-        return tomcatManager.deploy(deploy.getFilePath());
-
-    }
-
     @RequestMapping(method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
-    public Services[] getServices() {
+    public Services[] getServices()
+            throws TomcatManagerException {
 
         Services[] response = new Services[1];
 

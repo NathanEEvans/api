@@ -15,6 +15,7 @@ package com.stormcloud.ide.api.tomcat;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
 
 /**
@@ -23,7 +24,9 @@ import com.stormcloud.ide.model.filesystem.Item;
  */
 public interface ITomcatManager {
 
-    Item getTomcat();
+    Item getTomcat() throws TomcatManagerException;
 
-    int deploy(String path) throws Exception;
+    String stop() throws TomcatManagerException;
+
+    String start() throws TomcatManagerException;
 }

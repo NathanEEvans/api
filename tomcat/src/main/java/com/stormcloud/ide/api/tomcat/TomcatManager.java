@@ -18,6 +18,7 @@ package com.stormcloud.ide.api.tomcat;
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
+import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -37,50 +38,20 @@ public class TomcatManager implements ITomcatManager {
     private IStormCloudDao dao;
 
     @Override
-    public int deploy(String path) throws Exception {
-
-        LOG.info("Deploying " + path);
-
-        User user = dao.getUser(RemoteUser.get().getUserName());
-
-        // check if there is a build product
-        File target = new File(path + "/target");
-
-        FilenameFilter filter = new FilenameFilter() {
-
-            @Override
-            public boolean accept(File file, String string) {
-
-                // don't show hidden files
-                if (string.endsWith(".war")) {
-                    return true;
-                }
-                return false;
-            }
-        };
-
-        LOG.info("Checking " + target.getAbsolutePath() + " for deployable products.");
-
-        File[] war = target.listFiles(filter);
+    public String start() throws TomcatManagerException {
 
 
-        LOG.info("Found " + war.length + " deployable product(s).");
-
-        if (war.length != 1) {
-            return 1;
-        }
-
-        LOG.info("Deploying to " + user.getHomeFolder() + "/tomcat/latest/webapps");
-
-        File deployable = war[0];
-
-        FileUtils.moveFileToDirectory(deployable.getAbsoluteFile(), new File(user.getHomeFolder() + "/tomcat/latest/webapps"), false);
-
-        return 0;
+        return "";
     }
 
     @Override
-    public Item getTomcat() {
+    public String stop() throws TomcatManagerException {
+
+        return "";
+    }
+
+    @Override
+    public Item getTomcat() throws TomcatManagerException {
 
         User user = dao.getUser(RemoteUser.get().getUserName());
 
@@ -97,7 +68,21 @@ public class TomcatManager implements ITomcatManager {
 
         File webappsDir = new File(webapps.getId());
 
-        for (File file : webappsDir.listFiles()) {
+        FilenameFilter filter = new FilenameFilter() {
+
+            @Override
+            public boolean accept(File file, String string) {
+
+                // don't show war files
+                if (string.endsWith(".war")) {
+                    return false;
+                }
+
+                return true;
+            }
+        };
+
+        for (File file : webappsDir.listFiles(filter)) {
 
             Item app = new Item();
             app.setId(file.getAbsolutePath());
