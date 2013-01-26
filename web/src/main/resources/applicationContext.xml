@@ -43,7 +43,7 @@
     </bean>
     
     <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:properties/storm-cloud.properties" />
+        <property name="location" value="classpath:properties/stormcloud.properties" />
     </bean>
 
     <import resource="classpath*:module.xml"/>
