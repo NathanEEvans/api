@@ -298,7 +298,8 @@ public class FileSystemManager implements IFilesystemManager {
             project.setLabel(pom.getName());
         }
 
-        if (pom.getBuild().getFinalName() == null || pom.getBuild().getFinalName().isEmpty()) {
+
+        if (pom.getBuild() == null || pom.getBuild().getFinalName() == null || pom.getBuild().getFinalName().isEmpty()) {
 
             project.setBuildName(dir.getName() + "-" + pom.getVersion());
 
