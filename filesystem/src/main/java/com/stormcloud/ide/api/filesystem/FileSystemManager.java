@@ -59,7 +59,42 @@ public class FileSystemManager implements IFilesystemManager {
     private static final String TEST_RESOURCE_DIR = "/src/test/resources";
 
     @Override
-    public synchronized Filesystem bare()
+    public Filesystem getFileTemplates()
+            throws FilesystemManagerException {
+
+
+        LOG.info(
+                "List File Templates for user["
+                + RemoteUser.get().getUserName()
+                + "]");
+
+        Filesystem filesystem = new Filesystem();
+
+        User user = getUser();
+
+        // list all files under the user home folder, 
+        // these are the project dirs
+        File[] files = new File(
+                user.getHomeFolder() + "/templates").listFiles(
+                Filters.getProjectFilter());
+
+        for (File file : files) {
+
+            Item item = new Item();
+            item.setId(file.getAbsolutePath());
+            item.setLabel(file.getName());
+            item.setType("folder");
+
+            filesystem.getChildren().add(item);
+
+            walk(item, file, Filters.getProjectFilter(), user, false);
+        }
+
+        return filesystem;
+    }
+
+    @Override
+    public Filesystem bare()
             throws FilesystemManagerException {
 
 
@@ -94,13 +129,79 @@ public class FileSystemManager implements IFilesystemManager {
         return filesystem;
     }
 
+    @Override
+    public Filesystem folderPicker(String root)
+            throws FilesystemManagerException {
+
+        LOG.info("Browse from " + root);
+
+        Filesystem filesystem = new Filesystem();
+
+        // list all files under the user home folder, 
+        // these are the project dirs
+        File[] files = new File(root).listFiles(
+                Filters.getProjectFilter());
+
+        // walk all project roots
+        for (File file : files) {
+
+            Item item = new Item();
+            item.setId(file.getAbsolutePath());
+            item.setLabel(file.getName());
+            item.setType("folder");
+
+            filesystem.getChildren().add(item);
+
+            walkDirs(item, file, Filters.getProjectFilter());
+        }
+
+        return filesystem;
+    }
+
+    @Override
+    public Item[] availableProjects()
+            throws FilesystemManagerException {
+
+        LOG.info(
+                "list Available Projects for user["
+                + RemoteUser.get().getUserName()
+                + "]");
+
+        User user = getUser();
+
+        // list all files under the user home folder, 
+        // these are the project dirs
+        File[] files = new File(
+                user.getProjectFolder()).listFiles(
+                Filters.getProjectFilter());
+
+        List<Item> items = new ArrayList<Item>();
+
+        for (File file : files) {
+
+            File closed = new File(file.getAbsolutePath() + CLOSED);
+
+            if (!closed.exists()) {
+
+                Item item = new Item();
+                item.setId(file.getAbsolutePath());
+                item.setLabel(file.getName());
+                item.setType("project");
+
+                items.add(item);
+            }
+        }
+
+        return items.toArray(new Item[items.size()]);
+    }
+
     /**
      * @param opened
      * @return
      * @throws FilesystemManagerException
      */
     @Override
-    public synchronized Filesystem list(boolean opened)
+    public Filesystem list(boolean opened)
             throws FilesystemManagerException {
 
         LOG.info(
@@ -561,6 +662,37 @@ public class FileSystemManager implements IFilesystemManager {
 
                 if (current != null) {
                     current.getChildren().add(item);
+                }
+            }
+        }
+    }
+
+    private void walkDirs(
+            Item current,
+            File dir,
+            FilenameFilter filter)
+            throws FilesystemManagerException {
+
+        File[] files = dir.listFiles(filter);
+
+        if (files != null) {
+
+            for (File file : files) {
+
+                if (file.isDirectory()) {
+                    // create new item
+                    Item item = new Item();
+                    item.setId(file.getAbsolutePath());
+                    item.setType("folder");
+                    item.setLabel(file.getName());
+
+
+                    walkDirs(item, file, filter);
+
+
+                    if (current != null) {
+                        current.getChildren().add(item);
+                    }
                 }
             }
         }

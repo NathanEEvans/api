@@ -1,39 +1,30 @@
 package com.stormcloud.ide.api;
 
 /*
- * #%L
- * Stormcloud IDE - API - Web
- * %%
- * Copyright (C) 2012 - 2013 Stormcloud IDE
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
+ * #%L Stormcloud IDE - API - Web %% Copyright (C) 2012 - 2013 Stormcloud IDE %%
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
+import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 /**
  *
@@ -47,8 +38,7 @@ public class FilesystemController extends BaseController {
     @Autowired
     private IFilesystemManager manager;
 
-    @RequestMapping(
-            value = "/types",
+    @RequestMapping(value = "/types",
     method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
@@ -58,6 +48,36 @@ public class FilesystemController extends BaseController {
         FileTypes[] types = manager.getFileTypes();
 
         return types;
+    }
+
+    @RequestMapping(value = "/templates",
+    method = RequestMethod.GET,
+    produces = "application/json")
+    @ResponseBody
+    public Filesystem[] getTemplates()
+            throws FilesystemManagerException {
+
+        LOG.info("Get File Templates for ");
+
+        Filesystem[] response = new Filesystem[1];
+
+        Filesystem filesystem = manager.getFileTemplates();
+
+        response[0] = filesystem;
+
+        return response;
+    }
+
+    @RequestMapping(value = "/projects/available",
+    method = RequestMethod.GET,
+    produces = "application/json")
+    @ResponseBody
+    public Item[] availableProjects()
+            throws FilesystemManagerException {
+
+        LOG.info("Get Available Projects");
+
+        return manager.availableProjects();
     }
 
     @RequestMapping(value = "/bare",
@@ -78,6 +98,25 @@ public class FilesystemController extends BaseController {
         return response;
     }
 
+    @RequestMapping(value = "/folderpicker",
+    method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Filesystem[] filePicker(
+            @RequestParam String filePath)
+            throws FilesystemManagerException {
+
+        LOG.info("FilePicking for " + filePath);
+
+        Filesystem[] response = new Filesystem[1];
+
+        Filesystem filesystem = manager.folderPicker(filePath);
+
+        response[0] = filesystem;
+
+        return response;
+    }
+
     /**
      * Get the available maven projects in JSON format.
      *
@@ -87,8 +126,7 @@ public class FilesystemController extends BaseController {
      * @return
      * @throws FilesystemManagerException
      */
-    @RequestMapping(
-            value = "/opened",
+    @RequestMapping(value = "/opened",
     method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
@@ -106,8 +144,7 @@ public class FilesystemController extends BaseController {
         return response;
     }
 
-    @RequestMapping(
-            value = "/closed",
+    @RequestMapping(value = "/closed",
     method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
@@ -178,8 +215,7 @@ public class FilesystemController extends BaseController {
         return manager.emptyTrash();
     }
 
-    @RequestMapping(
-            value = "/hasTrash",
+    @RequestMapping(value = "/hasTrash",
     method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
@@ -191,8 +227,7 @@ public class FilesystemController extends BaseController {
         return manager.hasTrash();
     }
 
-    @RequestMapping(
-            value = "/move",
+    @RequestMapping(value = "/move",
     method = RequestMethod.POST)
     @ResponseBody
     public int move(
@@ -205,8 +240,7 @@ public class FilesystemController extends BaseController {
         return manager.move(srcFilePath, destFilePath);
     }
 
-    @RequestMapping(
-            value = "/copy",
+    @RequestMapping(value = "/copy",
     method = RequestMethod.POST)
     @ResponseBody
     public int copy(
