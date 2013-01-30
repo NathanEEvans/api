@@ -116,14 +116,18 @@ public class FileSystemManager implements IFilesystemManager {
         // walk all project roots
         for (File file : files) {
 
-            Item item = new Item();
-            item.setId(file.getAbsolutePath());
-            item.setLabel(file.getName());
-            item.setType("folder");
+            File closed = new File(file.getAbsolutePath() + CLOSED);
 
-            filesystem.getChildren().add(item);
+            if (!closed.exists()) {
+                Item item = new Item();
+                item.setId(file.getAbsolutePath());
+                item.setLabel(file.getName());
+                item.setType("folder");
 
-            walk(item, file, Filters.getProjectFilter(), user, false);
+                filesystem.getChildren().add(item);
+
+                walk(item, file, Filters.getProjectFilter(), user, false);
+            }
         }
 
         return filesystem;
