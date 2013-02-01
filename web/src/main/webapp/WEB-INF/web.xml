@@ -42,10 +42,19 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
+        
+    <listener>    
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>    
+    </listener>    
     
+    <context-param>    
+        <param-name>contextConfigLocation</param-name>    
+        <param-value>classpath:applicationContext.xml</param-value>    
+    </context-param>    
+        
     <filter>
         <filter-name>UserFilter</filter-name>
-        <filter-class>com.stormcloud.filter.UserFilter</filter-class>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
     
     <filter-mapping>
@@ -61,7 +70,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Registered</web-resource-name>
-            <url-pattern>/api/*</url-pattern>
+            <url-pattern>/api/login</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>DELETE</http-method>
@@ -77,7 +86,7 @@
     </login-config>
     
     <security-role>
-        <description>Registered user with existing Account</description>
+        <description>Registered user</description>
         <role-name>REGISTERED_USER</role-name>
     </security-role>
     

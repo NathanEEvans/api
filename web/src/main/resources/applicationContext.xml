@@ -48,8 +48,11 @@
 
     <import resource="classpath*:module.xml"/>
     
-    <context:component-scan base-package="com.stormcloud.ide.api" />
+    <context:component-scan base-package="com.stormcloud.ide" />
 
     <mvc:annotation-driven/>
+
+    <bean id="UserFilter" class="com.stormcloud.ide.api.filter.UserFilter"/>
+
 
 </beans>

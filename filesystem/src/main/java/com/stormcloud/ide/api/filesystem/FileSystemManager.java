@@ -70,7 +70,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         // list all files under the user home folder, 
         // these are the project dirs
@@ -105,7 +105,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         // list all files under the user home folder, 
         // these are the project dirs
@@ -171,7 +171,7 @@ public class FileSystemManager implements IFilesystemManager {
                 + RemoteUser.get().getUserName()
                 + "]");
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         // list all files under the user home folder, 
         // these are the project dirs
@@ -215,7 +215,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         // list all files under the user home folder, 
         // these are the project dirs
@@ -430,6 +430,7 @@ public class FileSystemManager implements IFilesystemManager {
         if (new File(dir.getAbsolutePath() + WEB_DIR).exists()) {
 
             Item webapp = new Item();
+            webapp.setId(dir.getAbsolutePath() + WEB_DIR);
             webapp.setLabel("Web Pages");
             webapp.setType("webapp");
 
@@ -445,6 +446,7 @@ public class FileSystemManager implements IFilesystemManager {
         if (new File(dir.getAbsolutePath() + SOURCE_DIR).exists()) {
 
             Item sources = new Item();
+            sources.setId(dir.getAbsolutePath() + SOURCE_DIR);
             sources.setLabel("Source Packages");
             sources.setType("sources");
 
@@ -460,6 +462,7 @@ public class FileSystemManager implements IFilesystemManager {
         if (new File(dir.getAbsolutePath() + RESOURCE_DIR).exists()) {
 
             Item resources = new Item();
+            resources.setId(dir.getAbsolutePath() + RESOURCE_DIR);
             resources.setLabel("Resources");
             resources.setType("resources");
 
@@ -475,6 +478,7 @@ public class FileSystemManager implements IFilesystemManager {
         if (new File(dir.getAbsolutePath() + TEST_SOURCE_DIR).exists()) {
 
             Item sources = new Item();
+            sources.setId(dir.getAbsolutePath() + TEST_SOURCE_DIR);
             sources.setLabel("Test Source Packages");
             sources.setType("sources");
 
@@ -490,6 +494,7 @@ public class FileSystemManager implements IFilesystemManager {
         if (new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR).exists()) {
 
             Item resources = new Item();
+            resources.setId(dir.getAbsolutePath() + TEST_RESOURCE_DIR);
             resources.setLabel("Test Resources");
             resources.setType("resources");
 
@@ -766,7 +771,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         File file = new File(filePath);
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         try {
 
@@ -810,7 +815,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         try {
 
-            User user = getUser();
+            User user = RemoteUser.get();
 
             File[] contents = new File(user.getHomeFolder() + TRASH).listFiles();
 
@@ -837,7 +842,7 @@ public class FileSystemManager implements IFilesystemManager {
     @Override
     public int hasTrash() throws FilesystemManagerException {
 
-        User user = getUser();
+        User user = RemoteUser.get();
 
         File[] contents = new File(user.getHomeFolder() + TRASH).listFiles();
 
@@ -910,7 +915,7 @@ public class FileSystemManager implements IFilesystemManager {
         File file = new File(filePath);
         String status = null;
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
+        User user = RemoteUser.get();
 
         try {
 
@@ -987,11 +992,6 @@ public class FileSystemManager implements IFilesystemManager {
         }
 
         return contents;
-    }
-
-    private User getUser() {
-
-        return dao.getUser(RemoteUser.get().getUserName());
     }
 
     public IGitManager getGitManager() {
