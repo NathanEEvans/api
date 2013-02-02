@@ -52,12 +52,6 @@ public class User implements Serializable {
     private String emailAddress;
     @Column(name = "authorization_code")
     private String authorizationCode;
-    @Column(name = "home_folder", nullable = false, unique = true)
-    private String homeFolder;
-    @Column(name = "project_folder", nullable = false, unique = true)
-    private String projectFolder;
-    @Column(name = "m2_folder", nullable = false, unique = true)
-    private String m2Folder;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
     joinColumns =
@@ -65,7 +59,7 @@ public class User implements Serializable {
     inverseJoinColumns =
     @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user")
     private Set<Setting> settings;
 
     public Long getId() {
@@ -114,30 +108,6 @@ public class User implements Serializable {
 
     public void setAuthorizationCode(String authorizationCode) {
         this.authorizationCode = authorizationCode;
-    }
-
-    public String getHomeFolder() {
-        return homeFolder;
-    }
-
-    public void setHomeFolder(String homeFolder) {
-        this.homeFolder = homeFolder;
-    }
-
-    public String getProjectFolder() {
-        return projectFolder;
-    }
-
-    public void setProjectFolder(String projectFolder) {
-        this.projectFolder = projectFolder;
-    }
-
-    public String getM2Folder() {
-        return m2Folder;
-    }
-
-    public void setM2Folder(String m2Folder) {
-        this.m2Folder = m2Folder;
     }
 
     public Set<Role> getRoles() {

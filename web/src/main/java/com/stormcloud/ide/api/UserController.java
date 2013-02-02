@@ -18,7 +18,7 @@ package com.stormcloud.ide.api;
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.Setting;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
-import java.util.Set;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
@@ -40,16 +40,21 @@ public class UserController extends BaseController {
     @Autowired
     private IStormCloudDao dao;
 
+    /**
+     * 
+     * @param request
+     * @param response
+     * @return
+     */
     @RequestMapping(value = "/settings",
     method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
-    public Set<Setting> getSettings(HttpServletRequest request, HttpServletResponse response) {
+    public List<Setting> getSettings(HttpServletRequest request, HttpServletResponse response) {
 
         LOG.info("Get Settings for " + RemoteUser.get().getUserName());
 
         // get settings and return
-
-        return RemoteUser.get().getSettings();
+        return dao.getSettings();
     }
 }

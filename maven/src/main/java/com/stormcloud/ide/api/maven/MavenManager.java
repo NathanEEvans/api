@@ -1,27 +1,20 @@
 package com.stormcloud.ide.api.maven;
 
 /*
- * #%L
- * Stormcloud IDE - API - Maven
- * %%
- * Copyright (C) 2012 - 2013 Stormcloud IDE
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
- * #L%
+ * #%L Stormcloud IDE - API - Maven %% Copyright (C) 2012 - 2013 Stormcloud IDE
+ * %% This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.Archetype;
 import com.stormcloud.ide.api.core.entity.ArchetypeCatalog;
@@ -30,6 +23,7 @@ import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.maven.exception.MavenManagerException;
 import com.stormcloud.ide.api.maven.thread.StreamGobbler;
 import com.stormcloud.ide.model.maven.Project;
+import com.stormcloud.ide.model.user.UserSettings;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -71,7 +65,10 @@ public class MavenManager implements IMavenManager {
 
         LOG.info("Create Project " + project.getProjectName());
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
+        String logHome = dao.getSetting(UserSettings.LOG_FOLDER);
+        String projectHome = dao.getSetting(UserSettings.PROJECT_FOLDER);
+
+
 
         int exitVal = 1;
 
@@ -83,7 +80,7 @@ public class MavenManager implements IMavenManager {
             String[] clear = {
                 BASH,
                 COMMAND,
-                "echo ... > " + user.getHomeFolder() + "/.log/maven.log"};
+                "echo ... > " + logHome + "/maven.log"};
 
             Process proc = Runtime.getRuntime().exec(clear);
 
@@ -100,7 +97,7 @@ public class MavenManager implements IMavenManager {
             // any error???
             exitVal = proc.waitFor();
 
-            LOG.info("Clear file " + user.getHomeFolder() + "/.log/maven.log, status " + exitVal);
+            LOG.info("Clear file " + logHome + "/maven.log, status " + exitVal);
 
             if (exitVal != 0) {
                 // ran into crap, return immediatly
@@ -110,7 +107,7 @@ public class MavenManager implements IMavenManager {
             // parameterize archetype values (version, id, groupId)
             // parameterize project root dir (now /data/maven)
             String command =
-                    " cd " + user.getHomeFolder() + "/projects ; "
+                    " cd " + projectHome + " ; "
                     + MAVEN_EXECUTABLE
                     + " "
                     + " archetype:generate -DarchetypeGroupId="
@@ -133,11 +130,11 @@ public class MavenManager implements IMavenManager {
                     + "\" -DprojectDescription=\""
                     + project.getDescription()
                     + "\" -DmuleVersion=3.2.1"
-                    + " > " + user.getHomeFolder() + "/.log/maven.log ; ";
+                    + " > " + logHome + "/maven.log ; ";
 
             if (!project.getArtifactId().equals(project.getProjectName())) {
 
-                command += " mv \"" + user.getHomeFolder() + "/projects/" + project.getArtifactId() + "\" \"" + user.getHomeFolder() + "/projects/" + project.getProjectName() + "\"";
+                command += " mv \"" + projectHome + "/" + project.getArtifactId() + "\" \"" + projectHome + "/" + project.getProjectName() + "\"";
             }
 
             /**
@@ -172,7 +169,7 @@ public class MavenManager implements IMavenManager {
                 return exitVal;
             }
 
-            command = "cd \"" + user.getHomeFolder() + "/projects/" + project.getProjectName() + "\" ; git init";
+            command = "cd \"" + projectHome + "/" + project.getProjectName() + "\" ; git init";
 
             String[] git = {
                 BASH,
@@ -217,12 +214,11 @@ public class MavenManager implements IMavenManager {
     public int execute(String command, String filePath)
             throws MavenManagerException {
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
 
         LOG.debug(
-                "Executing on filePath[" + filePath + "] for user[" + user.getUserName() + "]");
+                "Executing on filePath[" + filePath + "] for user[" + RemoteUser.get().getUserName() + "]");
 
-        String logfile = user.getHomeFolder() + "/.log/maven.log";
+        String logfile = dao.getSetting(UserSettings.LOG_FOLDER) + "/maven.log";
 
         try {
 

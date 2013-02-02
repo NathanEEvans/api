@@ -27,6 +27,7 @@ import com.stormcloud.ide.model.factory.MavenModelFactory;
 import com.stormcloud.ide.model.factory.exception.MavenModelFactoryException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Item;
+import com.stormcloud.ide.model.user.UserSettings;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -46,7 +47,6 @@ public class FileSystemManager implements IFilesystemManager {
     private Logger LOG = Logger.getLogger(getClass());
     private IGitManager gitManager;
     private IStormCloudDao dao;
-    private static final String TRASH = "/.trash";
     private static final String CLOSED = "/.closed";
     private static final String POM = "/pom.xml";
     private static final String SETTINGS_XML = "/settings.xml";
@@ -70,12 +70,10 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = RemoteUser.get();
-
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                user.getHomeFolder() + "/templates").listFiles(
+                dao.getSetting(UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         for (File file : files) {
@@ -87,7 +85,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             filesystem.getChildren().add(item);
 
-            walk(item, file, Filters.getProjectFilter(), user, false);
+            walk(item, file, Filters.getProjectFilter(), false);
         }
 
         return filesystem;
@@ -105,12 +103,10 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = RemoteUser.get();
-
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                user.getProjectFolder()).listFiles(
+                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         // walk all project roots
@@ -126,7 +122,7 @@ public class FileSystemManager implements IFilesystemManager {
 
                 filesystem.getChildren().add(item);
 
-                walk(item, file, Filters.getProjectFilter(), user, false);
+                walk(item, file, Filters.getProjectFilter(), false);
             }
         }
 
@@ -171,12 +167,10 @@ public class FileSystemManager implements IFilesystemManager {
                 + RemoteUser.get().getUserName()
                 + "]");
 
-        User user = RemoteUser.get();
-
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                user.getProjectFolder()).listFiles(
+                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         List<Item> items = new ArrayList<Item>();
@@ -215,12 +209,10 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        User user = RemoteUser.get();
-
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                user.getProjectFolder()).listFiles(
+                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         // loop trough the project files
@@ -270,7 +262,7 @@ public class FileSystemManager implements IFilesystemManager {
                         // processing we need (single or multi)
                         if (packaging.equals("pom")) {
 
-                            Item project = processModule(file, user, true);
+                            Item project = processModule(file, true);
 
                             // a parent pom, nested modules
 
@@ -287,7 +279,7 @@ public class FileSystemManager implements IFilesystemManager {
                                 if (moduleDir.exists()) {
 
                                     Item projectModule =
-                                            processModule(moduleDir, user, false);
+                                            processModule(moduleDir, false);
 
                                     project.getChildren().add(projectModule);
                                 }
@@ -299,13 +291,13 @@ public class FileSystemManager implements IFilesystemManager {
                             pomFile.setId(file.getAbsolutePath() + POM);
                             pomFile.setType("projectSettings");
                             pomFile.setLabel("Project Settings");
-                            String status = gitManager.getStatus(pomFile.getId(), user.getHomeFolder());
+                            String status = gitManager.getStatus(pomFile.getId(), dao.getSetting(UserSettings.USER_HOME));
                             pomFile.setStatus(status);
 
                             project.getChildren().add(pomFile);
 
                             Item settings = new Item();
-                            settings.setId(user.getM2Folder() + SETTINGS_XML);
+                            settings.setId(dao.getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
                             settings.setLabel("Maven Settings");
                             settings.setType("mavenSettings");
 
@@ -317,11 +309,11 @@ public class FileSystemManager implements IFilesystemManager {
 
                             // single project, no nested modules
                             Item project =
-                                    processModule(file, user, false);
+                                    processModule(file, false);
 
 
                             Item settings = new Item();
-                            settings.setId(user.getM2Folder() + SETTINGS_XML);
+                            settings.setId(dao.getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
                             settings.setLabel("Maven Settings");
                             settings.setType("mavenSettings");
 
@@ -370,7 +362,6 @@ public class FileSystemManager implements IFilesystemManager {
 
     private Item processModule(
             File dir,
-            User user,
             boolean root)
             throws FilesystemManagerException, MavenModelFactoryException, GitManagerException {
 
@@ -413,8 +404,8 @@ public class FileSystemManager implements IFilesystemManager {
             project.setBuildName(pom.getBuild().getFinalName());
         }
 
-        //String status = gitManager.getStatus(project.getId());
-        //project.setStatus(status);
+
+        String userHome = dao.getSetting(UserSettings.USER_HOME);
 
         if (new File(dir.getAbsolutePath() + MULE_CONFIG_DIR).exists()) {
 
@@ -434,12 +425,12 @@ public class FileSystemManager implements IFilesystemManager {
             webapp.setLabel("Web Pages");
             webapp.setType("webapp");
 
-            String status = gitManager.getStatus(dir.getAbsolutePath() + WEB_DIR, user.getHomeFolder());
+            String status = gitManager.getStatus(dir.getAbsolutePath() + WEB_DIR, userHome);
             webapp.setStatus(status);
 
             project.getChildren().add(webapp);
 
-            walk(webapp, new File(dir.getAbsolutePath() + WEB_DIR), Filters.getProjectFilter(), user, true);
+            walk(webapp, new File(dir.getAbsolutePath() + WEB_DIR), Filters.getProjectFilter(), true);
         }
 
         // if there is a source dir process it
@@ -450,12 +441,12 @@ public class FileSystemManager implements IFilesystemManager {
             sources.setLabel("Source Packages");
             sources.setType("sources");
 
-            String status = gitManager.getStatus(dir.getAbsolutePath() + SOURCE_DIR, user.getHomeFolder());
+            String status = gitManager.getStatus(dir.getAbsolutePath() + SOURCE_DIR, userHome);
             sources.setStatus(status);
 
             project.getChildren().add(sources);
 
-            walk(sources, new File(dir.getAbsolutePath() + SOURCE_DIR), Filters.getProjectFilter(), user, true);
+            walk(sources, new File(dir.getAbsolutePath() + SOURCE_DIR), Filters.getProjectFilter(), true);
         }
 
         // if there is a resources dir process it
@@ -466,12 +457,12 @@ public class FileSystemManager implements IFilesystemManager {
             resources.setLabel("Resources");
             resources.setType("resources");
 
-            String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, user.getHomeFolder());
+            String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, userHome);
             resources.setStatus(status);
 
             project.getChildren().add(resources);
 
-            walk(resources, new File(dir.getAbsolutePath() + RESOURCE_DIR), Filters.getProjectFilter(), user, true);
+            walk(resources, new File(dir.getAbsolutePath() + RESOURCE_DIR), Filters.getProjectFilter(), true);
         }
 
         // if there is a test source dir, process it
@@ -482,12 +473,12 @@ public class FileSystemManager implements IFilesystemManager {
             sources.setLabel("Test Source Packages");
             sources.setType("sources");
 
-            String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_SOURCE_DIR, user.getHomeFolder());
+            String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_SOURCE_DIR, userHome);
             sources.setStatus(status);
 
             project.getChildren().add(sources);
 
-            walk(sources, new File(dir.getAbsolutePath() + TEST_SOURCE_DIR), Filters.getProjectFilter(), user, true);
+            walk(sources, new File(dir.getAbsolutePath() + TEST_SOURCE_DIR), Filters.getProjectFilter(), true);
         }
 
         // if there is test resources dir dir, process it
@@ -498,12 +489,12 @@ public class FileSystemManager implements IFilesystemManager {
             resources.setLabel("Test Resources");
             resources.setType("resources");
 
-            String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_RESOURCE_DIR, user.getHomeFolder());
+            String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_RESOURCE_DIR, userHome);
             resources.setStatus(status);
 
             project.getChildren().add(resources);
 
-            walk(resources, new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter(), user, true);
+            walk(resources, new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter(), true);
         }
 
         /**
@@ -529,7 +520,6 @@ public class FileSystemManager implements IFilesystemManager {
             Item current,
             File dir,
             FilenameFilter filter,
-            User user,
             boolean versioning)
             throws FilesystemManagerException {
 
@@ -572,7 +562,7 @@ public class FileSystemManager implements IFilesystemManager {
 
                     try {
 
-                        String status = gitManager.getStatus(item.getId(), user.getHomeFolder());
+                        String status = gitManager.getStatus(item.getId(), dao.getSetting(UserSettings.USER_HOME));
                         item.setStatus(status);
 
                     } catch (GitManagerException e) {
@@ -666,7 +656,7 @@ public class FileSystemManager implements IFilesystemManager {
 
                 if (file.isDirectory()) {
 
-                    walk(item, file, filter, user, versioning);
+                    walk(item, file, filter, versioning);
                 }
 
                 if (current != null) {
@@ -779,13 +769,13 @@ public class FileSystemManager implements IFilesystemManager {
 
                 try {
 
-                    FileUtils.moveDirectory(file, new File(user.getHomeFolder() + TRASH + "/" + file.getName()));
+                    FileUtils.moveDirectory(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
                     // when a project with the same name is in there, add the date to make it unique
-                    FileUtils.moveDirectory(file, new File(user.getHomeFolder() + TRASH + "/" + file.getName() + "-" + new Date()));
+                    FileUtils.moveDirectory(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
 
                 }
 
@@ -793,12 +783,12 @@ public class FileSystemManager implements IFilesystemManager {
 
                 try {
 
-                    FileUtils.moveFile(file, new File(user.getHomeFolder() + TRASH + "/" + file.getName()));
+                    FileUtils.moveFile(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
-                    FileUtils.moveFile(file, new File(user.getHomeFolder() + TRASH + "/" + file.getName() + "-" + new Date()));
+                    FileUtils.moveFile(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
                 }
             }
 
@@ -817,7 +807,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             User user = RemoteUser.get();
 
-            File[] contents = new File(user.getHomeFolder() + TRASH).listFiles();
+            File[] contents = new File(dao.getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
             for (File file : contents) {
 
@@ -844,7 +834,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         User user = RemoteUser.get();
 
-        File[] contents = new File(user.getHomeFolder() + TRASH).listFiles();
+        File[] contents = new File(dao.getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
         return contents.length;
     }
@@ -915,19 +905,19 @@ public class FileSystemManager implements IFilesystemManager {
         File file = new File(filePath);
         String status = null;
 
-        User user = RemoteUser.get();
+        String userHome = dao.getSetting(UserSettings.USER_HOME);
 
         try {
 
             FileUtils.writeStringToFile(file, contents);
 
-            String relativePath = file.getAbsolutePath().replaceFirst(user.getHomeFolder(), "").replaceFirst("/", "");
+            String relativePath = file.getAbsolutePath().replaceFirst(userHome, "").replaceFirst("/", "");
 
             String project = relativePath.substring(0, relativePath.indexOf("/"));
 
             LOG.info("project " + project);
 
-            String repository = user.getHomeFolder() + "/" + project;
+            String repository = userHome + "/" + project;
 
             LOG.info("repository " + repository);
 
@@ -935,7 +925,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             LOG.info("relativePath " + relativePath);
 
-            status = gitManager.getStatus(file, user.getHomeFolder());
+            status = gitManager.getStatus(file, userHome);
 
         } catch (IOException e) {
             LOG.error(e);

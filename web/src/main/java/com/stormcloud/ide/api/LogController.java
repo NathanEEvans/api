@@ -19,6 +19,7 @@ import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.maven.exception.MavenManagerException;
+import com.stormcloud.ide.model.user.UserSettings;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -49,11 +50,9 @@ public class LogController {
 
         String contents;
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
-
         try {
 
-            contents = FileUtils.readFileToString(new File(user.getHomeFolder() + "/.log/maven.log"));
+            contents = FileUtils.readFileToString(new File(dao.getSetting(UserSettings.LOG_FOLDER) + "/maven.log"));
 
         } catch (IOException e) {
             contents = e.getMessage();
@@ -72,11 +71,9 @@ public class LogController {
 
         String contents;
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
-
         try {
 
-            contents = FileUtils.readFileToString(new File(user.getHomeFolder() + "/tomcat/latest/logs/catalina.out"));
+            contents = FileUtils.readFileToString(new File(dao.getSetting(UserSettings.TOMCAT_HOME) + "/logs/catalina.out"));
 
         } catch (IOException e) {
             contents = e.getMessage();
