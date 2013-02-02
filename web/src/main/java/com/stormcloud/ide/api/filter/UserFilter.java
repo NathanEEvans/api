@@ -68,34 +68,25 @@ public class UserFilter implements Filter {
                 // so we now need to genereate an authentication token
                 // and store it in a cookie we sent back
                 // create the cookie with key for consecutive Rest API Calls
-                String keyInput;
-                String key;
 
                 // Get user from db and add to the localthread
                 User user = dao.getUser(httpRequest.getRemoteUser());
+
+                if (user == null) {
+
+                    LOG.error("User not found.");
+                    httpResponse.sendError(HttpStatus.FORBIDDEN.value());
+                    httpResponse.flushBuffer();
+                }
+
                 RemoteUser.set(user);
 
-                // include username 
-                String userName = user.getUserName();
-
-                String password = user.getPassword();
-
-                // not sure here if we can use remoteHost or remoteAddress
-                // because of possible user being behind a proxy
-                // i'm using the ip address for now
-                // String remoteHost = request.getRemoteHost();
-                String remoteAddress = request.getRemoteAddr();
 
                 try {
 
-                    keyInput = userName + password + remoteAddress;
-
-                    key = md5(keyInput);
-
-                    LOG.debug("Key generated : " + key);
 
                     // set the key cookie
-                    Cookie keyCookie = new Cookie("stormcloud-key", key);
+                    Cookie keyCookie = new Cookie("stormcloud-key", createKey(user, httpRequest.getRemoteAddr()));
                     keyCookie.setMaxAge(60 * 60 * 24); // 1 day
 
                     httpResponse.addCookie(keyCookie);
@@ -115,6 +106,7 @@ public class UserFilter implements Filter {
 
                         // no go
                         httpResponse.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                        httpResponse.flushBuffer();
 
                     } catch (IOException ioe) {
                         LOG.error(ioe);
@@ -123,6 +115,9 @@ public class UserFilter implements Filter {
 
 
             } else {
+
+
+                LOG.info("API Request.");
 
                 // any other request than a login
                 // we need to check the username and received key
@@ -154,22 +149,59 @@ public class UserFilter implements Filter {
 
                 if (userName == null || key == null) {
 
+                    LOG.info("Required credentials not found.");
                     httpResponse.sendError(HttpStatus.FORBIDDEN.value());
+                    httpResponse.flushBuffer();
+
+                } else {
+
+
+                    // get user
+
+                    LOG.debug("Get User : " + userName);
+                    User user = dao.getUser(userName);
+
+                    if (user == null) {
+                        httpResponse.sendError(HttpStatus.FORBIDDEN.value());
+                        httpResponse.flushBuffer();
+                    }
+
+                    RemoteUser.set(user);
+
+                    try {
+
+                        String matchKey = createKey(user, httpRequest.getRemoteAddr());
+
+                        LOG.info("Validating Key.");
+
+                        if (!matchKey.equals(key)) {
+
+                            LOG.warn("Invalid Key!");
+                            httpResponse.sendError(HttpStatus.FORBIDDEN.value());
+                            httpResponse.flushBuffer();
+
+                        } else {
+
+                            LOG.info("Request Authenticated");
+                        }
+
+
+                    } catch (NoSuchAlgorithmException e) {
+
+                        LOG.error(e);
+
+                        try {
+
+                            // no go
+                            httpResponse.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                            httpResponse.flushBuffer();
+
+                        } catch (IOException ioe) {
+                            LOG.error(ioe);
+                        }
+                    }
+
                 }
-
-                
-                // key validity
-
-                LOG.info("Validating Key.");
-
-                // if key validation fails
-
-
-                LOG.debug("Get User : " + userName);
-                User user = dao.getUser(userName);
-                RemoteUser.set(user);
-
-
             }
 
             chain.doFilter(request, response);
@@ -185,13 +217,32 @@ public class UserFilter implements Filter {
         }
     }
 
-    private String md5(String key) throws NoSuchAlgorithmException {
+    private String createKey(User user, String remoteAddress) throws NoSuchAlgorithmException {
+
+        String keyInput;
+        String key;
+
+        // include username 
+        String userName = user.getUserName();
+
+        String password = user.getPassword();
+
+        // not sure here if we can use remoteHost or remoteAddress
+        // because of possible user being behind a proxy
+        // i'm using the ip address for now
+        // String remoteHost = request.getRemoteHost();
+
+        keyInput = userName + password + remoteAddress;
 
         MessageDigest digest = MessageDigest.getInstance("MD5");
 
-        digest.update(key.getBytes(), 0, key.length());
+        digest.update(keyInput.getBytes(), 0, keyInput.length());
 
-        return new BigInteger(1, digest.digest()).toString(16);
+        key = new BigInteger(1, digest.digest()).toString(16);
+
+        LOG.debug("Key generated : " + key);
+
+        return key;
 
     }
 
