@@ -1,4 +1,4 @@
-package com.stormcloud.rest.model;
+package com.stormcloud.ide.model.java;
 
 /*
  * #%L

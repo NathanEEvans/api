@@ -24,7 +24,7 @@ package com.stormcloud.ide.api;
 
 import com.stormcloud.ide.api.core.entity.Classpath;
 import com.stormcloud.ide.api.java.IJavaManager;
-import com.stormcloud.rest.model.SearchResult;
+import com.stormcloud.ide.model.java.SearchResult;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
