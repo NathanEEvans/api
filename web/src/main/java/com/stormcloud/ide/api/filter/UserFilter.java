@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 
 /**
  *
@@ -46,22 +47,12 @@ public class UserFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
 
-
-        /**
-         * Either we received a login request and the Basic Auth succeeded or we
-         * need to validate the key we received in the cookie
-         *
-         *
-         *
-         */
         try {
 
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-
             LOG.info("Filter Request [" + request.getRemoteAddr() + ", " + request.getRemoteHost() + ", " + httpRequest.getRemoteUser() + "]");
-
 
             /**
              * Check if the request came trough the api/login service
@@ -70,19 +61,25 @@ public class UserFilter implements Filter {
 
             if (httpRequest.getRequestURI().endsWith("/api/login")) {
 
+
+                LOG.debug("Login Request for : " + httpRequest.getRemoteUser());
+
                 // it's a login request which succeeded (Basic Auth)
                 // so we now need to genereate an authentication token
                 // and store it in a cookie we sent back
                 // create the cookie with key for consecutive Rest API Calls
                 String keyInput;
-                String key = null;
+                String key;
+
+                // Get user from db and add to the localthread
+                User user = dao.getUser(httpRequest.getRemoteUser());
+                RemoteUser.set(user);
 
                 // include username 
-                String userName = httpRequest.getRemoteUser();
+                String userName = user.getUserName();
 
+                String password = user.getPassword();
 
-
-                //String password =
                 // not sure here if we can use remoteHost or remoteAddress
                 // because of possible user being behind a proxy
                 // i'm using the ip address for now
@@ -91,24 +88,33 @@ public class UserFilter implements Filter {
 
                 try {
 
-
-                    keyInput = userName + remoteAddress;
+                    keyInput = userName + password + remoteAddress;
 
                     key = md5(keyInput);
 
-                    Cookie scuCookie = new Cookie("sc", key);
-                    scuCookie.setMaxAge(60 * 60 * 24); // 1 day
+                    LOG.debug("Key generated : " + key);
 
-                    httpResponse.addCookie(scuCookie);
+                    // set the key cookie
+                    Cookie keyCookie = new Cookie("stormcloud-key", key);
+                    keyCookie.setMaxAge(60 * 60 * 24); // 1 day
+
+                    httpResponse.addCookie(keyCookie);
+
+                    // set the username cookie
+                    Cookie userCookie = new Cookie("stormcloud-user", user.getUserName());
+                    userCookie.setMaxAge(60 * 60 * 24); // 1 day
+
+                    httpResponse.addCookie(userCookie);
 
 
                 } catch (NoSuchAlgorithmException e) {
+
                     LOG.error(e);
 
                     try {
 
                         // no go
-                        httpResponse.sendError(500);
+                        httpResponse.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
 
                     } catch (IOException ioe) {
                         LOG.error(ioe);
@@ -118,31 +124,52 @@ public class UserFilter implements Filter {
 
             } else {
 
-
-
                 // any other request than a login
-
-                /**
-                 * Cookie cookie = new Cookie(name,value);
-                 * response.addCookie(cookie);
-                 */
+                // we need to check the username and received key
                 Cookie[] cookies = httpRequest.getCookies();
 
+                String userName = null;
+                String key = null;
+
                 if (cookies != null) {
+
                     LOG.info("Found " + cookies.length + " Cookies");
 
+                    // loop trough the cookies
                     for (int i = 0; i < cookies.length; i++) {
-                        LOG.debug("name = " + cookies[i].getName());
-                        LOG.debug("value = " + cookies[i].getValue());
-                    }
 
+                        if (cookies[i].getName().equals("stormcloud-user")) {
+
+                            LOG.debug("userName = " + cookies[i].getValue());
+                            userName = cookies[i].getValue();
+                        }
+
+                        if (cookies[i].getName().equals("stormcloud-key")) {
+
+                            LOG.debug("key = " + cookies[i].getValue());
+                            key = cookies[i].getValue();
+                        }
+                    }
                 }
 
+                if (userName == null || key == null) {
 
-                // when all is well, get user from db and add to the localthread
-                // get the username from the cookie
-                User user = dao.getUser("martijn");
+                    httpResponse.sendError(HttpStatus.FORBIDDEN.value());
+                }
+
+                
+                // key validity
+
+                LOG.info("Validating Key.");
+
+                // if key validation fails
+
+
+                LOG.debug("Get User : " + userName);
+                User user = dao.getUser(userName);
                 RemoteUser.set(user);
+
+
             }
 
             chain.doFilter(request, response);

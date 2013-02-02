@@ -15,6 +15,7 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.api.core.remote.RemoteUser;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
@@ -28,20 +29,21 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * @author martijn
  */
 @Controller
-@RequestMapping(value = "/login")
-public class LoginController extends BaseController {
+@RequestMapping(value = "/user")
+public class UserController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
 
-    @RequestMapping(method = RequestMethod.POST,
+    @RequestMapping(value = "/settings",
+    method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
-    public void login(HttpServletRequest request, HttpServletResponse response) {
+    public void getSettings(HttpServletRequest request, HttpServletResponse response) {
 
-        // if the request came here we know the Basic Auth was succesfull
-        // this thing is basically a dummy to just provide the secured login url
-        // the real work is done in the UserFilter
-        LOG.info("Basic Auth succeeded for " + request.getRemoteUser());
+        LOG.info("Get Settings for " + RemoteUser.get().getUserName());
 
+        
+        // get settings and return
+        
     }
 }
