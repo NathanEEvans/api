@@ -62,18 +62,12 @@ public class FileSystemManager implements IFilesystemManager {
     public Filesystem getFileTemplates()
             throws FilesystemManagerException {
 
-
-        LOG.info(
-                "List File Templates for user["
-                + RemoteUser.get().getUserName()
-                + "]");
-
         Filesystem filesystem = new Filesystem();
 
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                dao.getSetting(UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
+                RemoteUser.get().getSetting(UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         for (File file : files) {
@@ -95,18 +89,12 @@ public class FileSystemManager implements IFilesystemManager {
     public Filesystem bare()
             throws FilesystemManagerException {
 
-
-        LOG.info(
-                "list Filesystem for user["
-                + RemoteUser.get().getUserName()
-                + "]");
-
         Filesystem filesystem = new Filesystem();
 
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
+                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         // walk all project roots
@@ -162,18 +150,14 @@ public class FileSystemManager implements IFilesystemManager {
     public Item[] availableProjects()
             throws FilesystemManagerException {
 
-        LOG.info(
-                "list Available Projects for user["
-                + RemoteUser.get().getUserName()
-                + "]");
 
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
+                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
-        List<Item> items = new ArrayList<Item>();
+        List<Item> items = new ArrayList<Item>(0);
 
         for (File file : files) {
 
@@ -202,17 +186,12 @@ public class FileSystemManager implements IFilesystemManager {
     public Filesystem list(boolean opened)
             throws FilesystemManagerException {
 
-        LOG.info(
-                "list Filesystem for user["
-                + RemoteUser.get().getUserName()
-                + "]");
-
         Filesystem filesystem = new Filesystem();
 
         // list all files under the user home folder, 
         // these are the project dirs
         File[] files = new File(
-                dao.getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
+                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
         // loop trough the project files
@@ -291,13 +270,13 @@ public class FileSystemManager implements IFilesystemManager {
                             pomFile.setId(file.getAbsolutePath() + POM);
                             pomFile.setType("projectSettings");
                             pomFile.setLabel("Project Settings");
-                            String status = gitManager.getStatus(pomFile.getId(), dao.getSetting(UserSettings.USER_HOME));
+                            String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
                             pomFile.setStatus(status);
 
                             project.getChildren().add(pomFile);
 
                             Item settings = new Item();
-                            settings.setId(dao.getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
+                            settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
                             settings.setLabel("Maven Settings");
                             settings.setType("mavenSettings");
 
@@ -313,7 +292,7 @@ public class FileSystemManager implements IFilesystemManager {
 
 
                             Item settings = new Item();
-                            settings.setId(dao.getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
+                            settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
                             settings.setLabel("Maven Settings");
                             settings.setType("mavenSettings");
 
@@ -405,7 +384,7 @@ public class FileSystemManager implements IFilesystemManager {
         }
 
 
-        String userHome = dao.getSetting(UserSettings.USER_HOME);
+        String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
 
         if (new File(dir.getAbsolutePath() + MULE_CONFIG_DIR).exists()) {
 
@@ -562,7 +541,7 @@ public class FileSystemManager implements IFilesystemManager {
 
                     try {
 
-                        String status = gitManager.getStatus(item.getId(), dao.getSetting(UserSettings.USER_HOME));
+                        String status = gitManager.getStatus(item.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
                         item.setStatus(status);
 
                     } catch (GitManagerException e) {
@@ -769,13 +748,13 @@ public class FileSystemManager implements IFilesystemManager {
 
                 try {
 
-                    FileUtils.moveDirectory(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
+                    FileUtils.moveDirectory(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
                     // when a project with the same name is in there, add the date to make it unique
-                    FileUtils.moveDirectory(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
+                    FileUtils.moveDirectory(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
 
                 }
 
@@ -783,12 +762,12 @@ public class FileSystemManager implements IFilesystemManager {
 
                 try {
 
-                    FileUtils.moveFile(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
+                    FileUtils.moveFile(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
-                    FileUtils.moveFile(file, new File(dao.getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
+                    FileUtils.moveFile(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
                 }
             }
 
@@ -807,7 +786,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             User user = RemoteUser.get();
 
-            File[] contents = new File(dao.getSetting(UserSettings.TRASH_FOLDER)).listFiles();
+            File[] contents = new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
             for (File file : contents) {
 
@@ -834,7 +813,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         User user = RemoteUser.get();
 
-        File[] contents = new File(dao.getSetting(UserSettings.TRASH_FOLDER)).listFiles();
+        File[] contents = new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
         return contents.length;
     }
@@ -905,7 +884,7 @@ public class FileSystemManager implements IFilesystemManager {
         File file = new File(filePath);
         String status = null;
 
-        String userHome = dao.getSetting(UserSettings.USER_HOME);
+        String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
 
         try {
 

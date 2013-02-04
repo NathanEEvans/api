@@ -16,7 +16,6 @@ package com.stormcloud.ide.api;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
-import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.maven.exception.MavenManagerException;
 import com.stormcloud.ide.model.user.UserSettings;
@@ -52,7 +51,7 @@ public class LogController {
 
         try {
 
-            contents = FileUtils.readFileToString(new File(dao.getSetting(UserSettings.LOG_FOLDER) + "/maven.log"));
+            contents = FileUtils.readFileToString(new File(RemoteUser.get().getSetting(UserSettings.LOG_FOLDER) + "/maven.log"));
 
         } catch (IOException e) {
             contents = e.getMessage();
@@ -73,7 +72,7 @@ public class LogController {
 
         try {
 
-            contents = FileUtils.readFileToString(new File(dao.getSetting(UserSettings.TOMCAT_HOME) + "/logs/catalina.out"));
+            contents = FileUtils.readFileToString(new File(RemoteUser.get().getSetting(UserSettings.TOMCAT_HOME) + "/logs/catalina.out"));
 
         } catch (IOException e) {
             contents = e.getMessage();

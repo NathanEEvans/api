@@ -45,12 +45,11 @@ public class TomcatManager implements ITomcatManager {
 
         LOG.info("Start tomcat at for " + RemoteUser.get().getUserName());
 
-        int exitVal = 1;
+        int exitVal;
 
         try {
 
-
-            String tomcatHome = dao.getSetting(UserSettings.TOMCAT_HOME);
+            String tomcatHome = RemoteUser.get().getSetting(UserSettings.TOMCAT_HOME);
 
             ProcessBuilder pb = new ProcessBuilder(tomcatHome + "/bin/startup.sh");
             Map<String, String> env = pb.environment();
@@ -102,7 +101,7 @@ public class TomcatManager implements ITomcatManager {
         tomcat.setLabel("Tomcat");
         tomcat.setType("tomcat");
 
-        String tomcatHome = dao.getSetting(UserSettings.TOMCAT_HOME);
+        String tomcatHome = RemoteUser.get().getSetting(UserSettings.TOMCAT_HOME);
 
         Item webapps = new Item();
         webapps.setId(tomcatHome + "/webapps");

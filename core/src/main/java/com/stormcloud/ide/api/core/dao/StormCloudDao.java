@@ -16,8 +16,6 @@ package com.stormcloud.ide.api.core.dao;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.entity.*;
-import com.stormcloud.ide.api.core.remote.RemoteUser;
-import com.stormcloud.ide.model.user.UserSettings;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -100,38 +98,5 @@ public class StormCloudDao implements IStormCloudDao {
         List<Classpath> result = (List<Classpath>) query.getResultList();
 
         return result;
-    }
-
-    @Override
-    public List<Setting> getSettings() {
-
-        LOG.info("Get Settings for " + RemoteUser.get().getUserName() + " id " + RemoteUser.get().getId());
-
-        Query query = manager.createQuery("Select s From Setting s Where s.user.id = :userId");
-
-        query.setParameter("userId", RemoteUser.get().getId());
-
-        List<Setting> result = (List<Setting>) query.getResultList();
-
-        LOG.debug("Returning " + result.size() + " Settings.");
-
-        return result;
-    }
-
-    @Override
-    public String getSetting(UserSettings settingKey) {
-
-
-        LOG.info("Get Setting : " + settingKey + " for " + RemoteUser.get().getUserName());
-
-        Query query = manager.createQuery("Select s From Setting s Where s.user.id = :userId And s.key = :settingKey");
-
-        query.setParameter("userId", RemoteUser.get().getId());
-        query.setParameter("settingKey", settingKey.name());
-
-
-        Setting setting = (Setting) query.getSingleResult();
-
-        return setting.getValue();
     }
 }

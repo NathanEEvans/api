@@ -67,7 +67,7 @@ public class GitManager implements IGitManager {
 
         LOG.info("Cloning : " + uri + " into " + folder);
 
-        cloneCommand.setDirectory(new File(dao.getSetting(UserSettings.PROJECT_FOLDER) + "/" + folder));
+        cloneCommand.setDirectory(new File(RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER) + "/" + folder));
         cloneCommand.setURI(uri);
 
         try {

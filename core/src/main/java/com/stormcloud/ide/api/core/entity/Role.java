@@ -16,14 +16,11 @@ package com.stormcloud.ide.api.core.entity;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import java.io.Serializable;
-import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 /**
@@ -43,8 +40,6 @@ public class Role implements Serializable {
     private String name;
     @Column(name = "role_descr")
     private String description;
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
-    private Set<User> users;
 
     public Long getId() {
         return id;
@@ -68,13 +63,5 @@ public class Role implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
     }
 }

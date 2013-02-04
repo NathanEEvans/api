@@ -41,7 +41,7 @@ public class LoginController extends BaseController {
         // if the request came here we know the Basic Auth was succesfull
         // this thing is basically a dummy to just provide the secured login url
         // the real work is done in the UserFilter
-        LOG.info("Basic Auth succeeded for " + request.getRemoteUser());
+        LOG.info("Basic Auth succeeded.");
 
     }
 }

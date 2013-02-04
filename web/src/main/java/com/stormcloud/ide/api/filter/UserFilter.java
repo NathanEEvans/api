@@ -27,6 +27,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
@@ -52,17 +53,17 @@ public class UserFilter implements Filter {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-            LOG.info("Filter Request [" + request.getRemoteAddr() + ", " + request.getRemoteHost() + ", " + httpRequest.getRemoteUser() + "]");
+            LOG.info("Filter Request [" + request.getRemoteAddr() + ", " + request.getRemoteHost() + "]");
 
-            /**
-             * Check if the request came trough the api/login service
-             */
-            LOG.debug("Request URL : " + httpRequest.getRequestURI());
+            MDC.put("api", httpRequest.getRequestURI());
 
             if (httpRequest.getRequestURI().endsWith("/api/login")) {
 
 
-                LOG.debug("Login Request for : " + httpRequest.getRemoteUser());
+                // configure MDC for the remainging trip
+                MDC.put("userName", httpRequest.getRemoteUser());
+
+                LOG.debug("Login Request.");
 
                 // it's a login request which succeeded (Basic Auth)
                 // so we now need to genereate an authentication token
@@ -81,18 +82,22 @@ public class UserFilter implements Filter {
 
                 RemoteUser.set(user);
 
-
                 try {
 
-
                     // set the key cookie
-                    Cookie keyCookie = new Cookie("stormcloud-key", createKey(user, httpRequest.getRemoteAddr()));
+                    Cookie keyCookie =
+                            new Cookie("stormcloud-key",
+                            createKey(user, httpRequest.getRemoteAddr()));
+
                     keyCookie.setMaxAge(60 * 60 * 24); // 1 day
 
                     httpResponse.addCookie(keyCookie);
 
                     // set the username cookie
-                    Cookie userCookie = new Cookie("stormcloud-user", user.getUserName());
+                    Cookie userCookie =
+                            new Cookie("stormcloud-user",
+                            user.getUserName());
+
                     userCookie.setMaxAge(60 * 60 * 24); // 1 day
 
                     httpResponse.addCookie(userCookie);
@@ -105,7 +110,9 @@ public class UserFilter implements Filter {
                     try {
 
                         // no go
-                        httpResponse.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                        httpResponse.sendError(
+                                HttpStatus.INTERNAL_SERVER_ERROR.value());
+
                         httpResponse.flushBuffer();
 
                     } catch (IOException ioe) {
@@ -115,7 +122,6 @@ public class UserFilter implements Filter {
 
 
             } else {
-
 
                 LOG.info("API Request.");
 
@@ -155,10 +161,11 @@ public class UserFilter implements Filter {
 
                 } else {
 
+                    // configure MDC for the remainging trip
+                    MDC.put("userName", userName);
 
                     // get user
-
-                    LOG.debug("Get User : " + userName);
+                    LOG.debug("Get Persisted User");
                     User user = dao.getUser(userName);
 
                     if (user == null) {
@@ -213,6 +220,10 @@ public class UserFilter implements Filter {
             LOG.error(e);
         } finally {
 
+            // clear the logging diagnostics context
+            MDC.clear();
+
+            // Remove the user from memoty
             RemoteUser.destroy();
         }
     }
@@ -239,8 +250,6 @@ public class UserFilter implements Filter {
         digest.update(keyInput.getBytes(), 0, keyInput.length());
 
         key = new BigInteger(1, digest.digest()).toString(16);
-
-        LOG.debug("Key generated : " + key);
 
         return key;
 

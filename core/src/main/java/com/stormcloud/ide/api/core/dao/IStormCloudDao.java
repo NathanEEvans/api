@@ -40,8 +40,4 @@ public interface IStormCloudDao {
     void delete(User user);
 
     List<Classpath> searchJdkClasspath(String searchKey, int start, int count);
-
-    List<Setting> getSettings();
-
-    String getSetting(UserSettings settingKey);
 }

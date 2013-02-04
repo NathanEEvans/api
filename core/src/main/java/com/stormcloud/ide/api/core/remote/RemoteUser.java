@@ -23,7 +23,7 @@ import com.stormcloud.ide.api.core.entity.User;
  */
 public class RemoteUser {
 
-    public static final ThreadLocal userThreadLocal = new ThreadLocal();
+    public static final ThreadLocal<User> userThreadLocal = new ThreadLocal<User>();
 
     public static void set(User user) {
         userThreadLocal.set(user);
@@ -34,6 +34,10 @@ public class RemoteUser {
     }
 
     public static User get() {
-        return (User) userThreadLocal.get();
+        return userThreadLocal.get();
+    }
+
+    private RemoteUser() {
+        // utility class
     }
 }

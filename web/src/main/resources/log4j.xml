@@ -29,13 +29,13 @@
         <param name="MaxFileSize" value="1024KB"/>
         <param name="MaxBackupIndex" value="50"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d %-5p %c - %m%n" />
+            <param name="ConversionPattern" value="%d %-5p [%X{userName}] [%X{api}]  %c - %m%n" />
         </layout>
     </appender>
 
     
     <category name="org.springframework">
-        <priority value="INFO"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.hibernate">

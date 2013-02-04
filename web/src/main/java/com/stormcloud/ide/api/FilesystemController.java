@@ -45,6 +45,8 @@ public class FilesystemController extends BaseController {
     public FileTypes[] getFileTypes()
             throws FilesystemManagerException {
 
+        LOG.info("Get Filetypes.");
+
         FileTypes[] types = manager.getFileTypes();
 
         return types;
@@ -57,7 +59,7 @@ public class FilesystemController extends BaseController {
     public Filesystem[] getTemplates()
             throws FilesystemManagerException {
 
-        LOG.info("Get File Templates for ");
+        LOG.info("Get File Templates.");
 
         Filesystem[] response = new Filesystem[1];
 
@@ -75,7 +77,8 @@ public class FilesystemController extends BaseController {
     public Item[] availableProjects()
             throws FilesystemManagerException {
 
-        LOG.info("Get Available Projects");
+
+        LOG.info("Get Available Projects.");
 
         return manager.availableProjects();
     }
@@ -87,7 +90,7 @@ public class FilesystemController extends BaseController {
     public Filesystem[] bare()
             throws FilesystemManagerException {
 
-        LOG.info("Get Filesystem for ");
+        LOG.info("Get Bare Filesystem");
 
         Filesystem[] response = new Filesystem[1];
 
@@ -106,7 +109,7 @@ public class FilesystemController extends BaseController {
             @RequestParam String filePath)
             throws FilesystemManagerException {
 
-        LOG.info("FilePicking for " + filePath);
+        LOG.info("Folder Picking for " + filePath);
 
         Filesystem[] response = new Filesystem[1];
 
@@ -133,7 +136,7 @@ public class FilesystemController extends BaseController {
     public Filesystem[] opened()
             throws FilesystemManagerException {
 
-        LOG.info("Get Filesystem for ");
+        LOG.info("Get Filesystem Opened.");
 
         Filesystem[] response = new Filesystem[1];
 
@@ -151,7 +154,7 @@ public class FilesystemController extends BaseController {
     public Filesystem[] closed()
             throws FilesystemManagerException {
 
-        LOG.info("Get Filesystem");
+        LOG.info("Get Filesystem Closed.");
 
         Filesystem[] response = new Filesystem[1];
 
@@ -256,8 +259,8 @@ public class FilesystemController extends BaseController {
     /**
      * Save a file to disk
      *
-     * @param filePath
-     * @param contents
+     * @param saveFile
+     * @return
      * @throws FilesystemManagerException
      */
     @RequestMapping(value = "/save", method = RequestMethod.POST,

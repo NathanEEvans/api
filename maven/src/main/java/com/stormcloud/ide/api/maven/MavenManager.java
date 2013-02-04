@@ -65,10 +65,8 @@ public class MavenManager implements IMavenManager {
 
         LOG.info("Create Project " + project.getProjectName());
 
-        String logHome = dao.getSetting(UserSettings.LOG_FOLDER);
-        String projectHome = dao.getSetting(UserSettings.PROJECT_FOLDER);
-
-
+        String logHome = RemoteUser.get().getSetting(UserSettings.LOG_FOLDER);
+        String projectHome = RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER);
 
         int exitVal = 1;
 
@@ -218,7 +216,7 @@ public class MavenManager implements IMavenManager {
         LOG.debug(
                 "Executing on filePath[" + filePath + "] for user[" + RemoteUser.get().getUserName() + "]");
 
-        String logfile = dao.getSetting(UserSettings.LOG_FOLDER) + "/maven.log";
+        String logfile = RemoteUser.get().getSetting(UserSettings.LOG_FOLDER) + "/maven.log";
 
         try {
 

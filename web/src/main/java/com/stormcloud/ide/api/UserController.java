@@ -15,14 +15,10 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.Setting;
+import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -37,24 +33,33 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class UserController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
-    @Autowired
-    private IStormCloudDao dao;
 
     /**
-     * 
-     * @param request
-     * @param response
+     *
      * @return
      */
-    @RequestMapping(value = "/settings",
-    method = RequestMethod.GET,
+    @RequestMapping(method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
-    public List<Setting> getSettings(HttpServletRequest request, HttpServletResponse response) {
+    public User getUser() {
 
-        LOG.info("Get Settings for " + RemoteUser.get().getUserName());
+        LOG.info("Get User.");
 
-        // get settings and return
-        return dao.getSettings();
+
+        User user = RemoteUser.get();
+
+
+        LOG.info("Settings size " + user.getSettings().size());
+
+        for (Setting setting : user.getSettings()) {
+
+
+            LOG.info("Setting " + setting.getId() + " " + setting.getKey() + " " + setting.getValue());
+        }
+
+
+
+        // get user which was already set in the filer and return
+        return user;
     }
 }

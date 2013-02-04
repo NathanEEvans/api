@@ -15,6 +15,7 @@ package com.stormcloud.ide.api.core.entity;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.model.user.UserSettings;
 import java.io.Serializable;
 import java.util.Set;
 import javax.persistence.Column;
@@ -23,11 +24,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
@@ -35,6 +34,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "`user`")
+@XmlRootElement
 @SuppressWarnings("serial")
 public class User implements Serializable {
 
@@ -52,14 +52,7 @@ public class User implements Serializable {
     private String emailAddress;
     @Column(name = "authorization_code")
     private String authorizationCode;
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "users_roles",
-    joinColumns =
-    @JoinColumn(name = "user_id", referencedColumnName = "id"),
-    inverseJoinColumns =
-    @JoinColumn(name = "role_id", referencedColumnName = "id"))
-    private Set<Role> roles;
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Setting> settings;
 
     public Long getId() {
@@ -110,19 +103,30 @@ public class User implements Serializable {
         this.authorizationCode = authorizationCode;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
-
     public Set<Setting> getSettings() {
         return settings;
     }
 
     public void setSettings(Set<Setting> settings) {
         this.settings = settings;
+    }
+
+    /**
+     * Convenience method to retrieve a specific setting from the suer settings.
+     *
+     * @param settingsKey
+     * @return
+     */
+    public String getSetting(UserSettings settingsKey) {
+
+        for (Setting setting : settings) {
+
+            if (setting.getKey().equals(settingsKey.name())) {
+
+                return setting.getValue();
+            }
+        }
+
+        return null;
     }
 }
