@@ -15,7 +15,6 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-import com.stormcloud.ide.api.core.entity.Setting;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import org.apache.log4j.Logger;
@@ -45,21 +44,7 @@ public class UserController extends BaseController {
 
         LOG.info("Get User.");
 
-
-        User user = RemoteUser.get();
-
-
-        LOG.info("Settings size " + user.getSettings().size());
-
-        for (Setting setting : user.getSettings()) {
-
-
-            LOG.info("Setting " + setting.getId() + " " + setting.getKey() + " " + setting.getValue());
-        }
-
-
-
         // get user which was already set in the filer and return
-        return user;
+        return RemoteUser.get();
     }
 }

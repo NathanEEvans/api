@@ -27,6 +27,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -38,18 +39,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 @SuppressWarnings("serial")
 public class User implements Serializable {
 
+    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", unique = true, nullable = false)
     private Long id;
+    @JsonIgnore
     @Column(name = "active")
     private boolean active = false;
     @Column(name = "user_name", nullable = false, unique = true)
     private String userName;
+    @JsonIgnore
     @Column(name = "password", nullable = false)
     private String password;
     @Column(name = "email_address", nullable = false, unique = true)
     private String emailAddress;
+    @JsonIgnore
     @Column(name = "authorization_code")
     private String authorizationCode;
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
