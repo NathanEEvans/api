@@ -15,6 +15,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+
 CREATE DATABASE `stormcloud`;
 USE `stormcloud`;
 
@@ -159,13 +160,14 @@ CREATE TABLE `setting` (
   `key` varchar(255) DEFAULT NULL,
   `value` varchar(255) DEFAULT NULL,
   `user_id` bigint(20) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   KEY `FK765F0E50E9AABF2C` (`user_id`),
   KEY `FK765F0E507ED3E43` (`user_id`),
   CONSTRAINT `FK765F0E507ED3E43` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   CONSTRAINT `FK765F0E50E9AABF2C` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -174,7 +176,7 @@ CREATE TABLE `setting` (
 
 LOCK TABLES `setting` WRITE;
 /*!40000 ALTER TABLE `setting` DISABLE KEYS */;
-INSERT INTO `setting` VALUES (1,'\0','Filesystem','HOME_FOLDER','/filesystem/martijn',1),(2,'\0','Filesystem','PROJECT_FOLDER','/filesystem/martijn/projects',1);
+INSERT INTO `setting` VALUES (1,'\0','Filesystem','USER_HOME','/filesystem/martijn',1,'Should point to the \'root\' directory of the User Home'),(2,'\0','Filesystem','PROJECT_FOLDER','/filesystem/martijn/projects',1,'Should point to the projects folder inside the USER_HOME'),(3,'\0','Filesystem','LOCAL_MAVEN_REPOSITORY','/filesystem/martijn/.m2',1,'Should point to the local maven repository folder in the USER_HOME'),(4,'\0','Filesystem','JAVA_HOME','/filesystem/martijn/java/latest',1,'Should point to the \'private\' JDK installation in the USER_HOME'),(5,'\0','Filesystem','TOMCAT_HOME','/filesystem/martijn/tomcat/latest',1,'Should point to the \'private\' Tomcat installation in the USER_HOME'),(6,'\0','Filesystem','LOG_FOLDER','/filesystem/martijn/.log',1,'Should point to the log directory in the USER_HOME'),(7,'\0','Filesystem','TRASH_FOLDER','/filesystem/martijn/.trash',1,'Should point to the trash folder in the USER_HOME'),(8,'\0','Filesystem','FILE_TEMPLATE_FOLDER','/filesystem/martijn/templates',1,'Should point to the File templates located under the USER_HOME'),(9,'\0','Tomcat','TOMCAT_VIEW_URL','http://martijn.stormcloud-ide.com:8180',1,'Should point to the url where the \'private\' Tomcat is running (instance under USER_HOME)'),(10,'\0','Tomcat','TOMCAT_MANAGER_URL','http://stormcloud-ide.com/manager/text/',1,'Should point to the manager/text url of the \'private\' Tomcat instance under USER_HOME'),(11,'\0','Api','API_URL','http://stormcloud-ide.com/stormcloud/api/',1,'Should point to the Stormcloud API base url');
 /*!40000 ALTER TABLE `setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -190,18 +192,12 @@ CREATE TABLE `user` (
   `active` bit(1) DEFAULT NULL,
   `authorization_code` varchar(255) DEFAULT NULL,
   `email_address` varchar(255) NOT NULL,
-  `home_folder` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `user_name` varchar(255) NOT NULL,
-  `project_folder` varchar(255) NOT NULL,
-  `m2_folder` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `email_address` (`email_address`),
-  UNIQUE KEY `home_folder` (`home_folder`),
-  UNIQUE KEY `user_name` (`user_name`),
-  UNIQUE KEY `project_folder_UNIQUE` (`project_folder`),
-  UNIQUE KEY `m2_folder_UNIQUE` (`m2_folder`)
+  UNIQUE KEY `user_name` (`user_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -211,7 +207,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'',NULL,'martijn.teigeler@gmail.com','/filesystem/martijn','1','martijn','/filesystem/martijn/projects','/filesystem/martijn/.m2');
+INSERT INTO `user` VALUES (1,'',NULL,'martijn.teigeler@gmail.com','1','martijn');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -308,4 +304,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-01-26 18:22:52
+-- Dump completed on 2013-02-04 13:03:25
