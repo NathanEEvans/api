@@ -18,6 +18,7 @@ package com.stormcloud.ide.api;
 import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
+import com.stormcloud.ide.model.filesystem.Create;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
@@ -102,7 +103,7 @@ public class FilesystemController extends BaseController {
     }
 
     @RequestMapping(value = "/folderpicker",
-    method = RequestMethod.POST,
+    method = RequestMethod.GET,
     produces = "application/json")
     @ResponseBody
     public Filesystem[] filePicker(
@@ -275,6 +276,28 @@ public class FilesystemController extends BaseController {
                 + "contents[" + saveFile.getContents() + "]");
 
         return manager.save(saveFile.getFilePath(), saveFile.getContents());
+    }
+
+    /**
+     * Create a file
+     *
+     * @param createFile
+     * @return
+     * @throws FilesystemManagerException
+     */
+    @RequestMapping(value = "/create",
+    method = RequestMethod.POST,
+    consumes = "application/json")
+    @ResponseBody
+    public String create(
+            @RequestBody Create createFile)
+            throws FilesystemManagerException {
+
+        LOG.debug(
+                "Creating filePath[" + createFile.getFilePath() + "], "
+                + " template[" + createFile.getTemplate() + "]");
+
+        return manager.create(createFile.getFilePath(), createFile.getTemplate());
     }
 
     /**

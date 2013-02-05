@@ -98,9 +98,22 @@ public interface IFilesystemManager {
      *
      * @param filePath
      * @param contents
+     * @return
      * @throws FilesystemManagerException
      */
     String save(String filePath, String contents)
+            throws FilesystemManagerException;
+
+    /**
+     *
+     * @param filePath
+     * @param fileType
+     * @return
+     * @throws FilesystemManagerException
+     */
+    String create(
+            String filePath,
+            String fileType)
             throws FilesystemManagerException;
 
     /**
