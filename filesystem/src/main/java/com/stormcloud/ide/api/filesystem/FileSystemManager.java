@@ -927,105 +927,89 @@ public class FileSystemManager implements IFilesystemManager {
             String fileType)
             throws FilesystemManagerException {
 
+        boolean isFile = fileType.contains(".");
 
         File file = new File(filePath);
         String status = null;
-
         String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
 
         try {
 
+            if (isFile) {
+                // get the template contents
+                String contents = FileUtils.readFileToString(new File(fileType));
 
-            // get the template contents
-            String contents = FileUtils.readFileToString(new File(fileType));
+                // set the author name
+                String author = RemoteUser.get().getUserName();
+                contents = contents.replaceAll("(\\{author\\})", author);
 
-            // set the author name
-            String author = RemoteUser.get().getUserName();
-            contents = contents.replaceAll("(\\{author\\})", author);
+                // set date & year
+                Date now = new Date();
 
-            // set date & year
-            Date now = new Date();
+                String year = new SimpleDateFormat("yyyy").format(now);
+                String date = new SimpleDateFormat("dd-MM-yyyy").format(now);
+                String time = new SimpleDateFormat("HH:mm:ss").format(now);
 
-            String year = new SimpleDateFormat("yyyy").format(now);
-            String date = new SimpleDateFormat("dd-MM-yyyy").format(now);
-            String time = new SimpleDateFormat("HH:mm:ss").format(now);
+                contents = contents.replaceAll("(\\{year\\})", year);
+                contents = contents.replaceAll("(\\{date\\})", date);
+                contents = contents.replaceAll("(\\{time\\})", time);
 
-            contents = contents.replaceAll("(\\{year\\})", year);
-            contents = contents.replaceAll("(\\{date\\})", date);
-            contents = contents.replaceAll("(\\{time\\})", time);
+                // set fileName
+                String fileName = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
+                contents = contents.replaceAll("(\\{fileName\\})", fileName);
 
-            // set fileName
-            String fileName = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
-            contents = contents.replaceAll("(\\{fileName\\})", fileName);
+                // set the classname
+                String className = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.lastIndexOf('.'));
+                contents = contents.replaceAll("(\\{className\\})", className);
 
-            // set the classname
-            String className = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.lastIndexOf('.'));
-            contents = contents.replaceAll("(\\{className\\})", className);
+                // set the package name if it's a java file
+                if (fileType.endsWith(".java")) {
 
-            // set the package name if it's a java file
-            if (fileType.endsWith(".java")) {
+                    // first we chop of the filename
+                    String packageName = filePath.substring(0, filePath.lastIndexOf('/'));
+                    LOG.info(packageName);
+                    // then we chop of the projects folder
+                    packageName = packageName.replace(RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER), "");
+                    LOG.info(packageName);
+                    // then we chop of the leading slash
+                    packageName = packageName.substring(1, packageName.length());
+                    // the projectname needs to go
+                    packageName = packageName.substring(packageName.indexOf('/'), packageName.length());
+                    LOG.info(packageName);
 
-                // first we chop of the filename
-                String packageName = filePath.substring(0, filePath.lastIndexOf('/'));
-                LOG.info(packageName);
-                // then we chop of the projects folder
-                packageName = packageName.replace(RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER), "");
-                LOG.info(packageName);
-                // then we chop of the leading slash
-                packageName = packageName.substring(1, packageName.length());
-                // the projectname needs to go
-                packageName = packageName.substring(packageName.indexOf('/'), packageName.length());
-                LOG.info(packageName);
+                    // replace any src/main
+                    packageName = packageName.replace("/src/main/java/", "");
 
-                // replace any src/main
-                packageName = packageName.replace("/src/main/java/", "");
+                    // replace src/test
+                    packageName = packageName.replace("/src/test/java/", "");
 
-                // replace src/test
-                packageName = packageName.replace("/src/test/java/", "");
+                    LOG.info(packageName);
 
-                LOG.info(packageName);
+                    // what we are left with should be the source package
+                    // so replace the slashes for dots
+                    packageName = packageName.replaceAll("(/)", ".");
 
-                // what we are left with should be the source package
-                // so replace the slashes for dots
-                packageName = packageName.replaceAll("(/)", ".");
+                    if (!packageName.isEmpty()) {
+                        contents = contents.replaceAll("(\\{packageName\\})", packageName);
+                    }
+                }
 
+                // write it
+                FileUtils.writeStringToFile(file, contents);
 
-                contents = contents.replaceAll("(\\{packageName\\})", packageName);
+            } else {
+
+                // just create the directory
+                file.mkdirs();
 
             }
-
-
-            // write it
-            FileUtils.writeStringToFile(file, contents);
-
-            String relativePath = file.getAbsolutePath().replaceFirst(userHome, "").replaceFirst("/", "");
-
-            String project = relativePath.substring(0, relativePath.indexOf("/"));
-
-            LOG.info("project " + project);
-
-            String repository = userHome + "/" + project;
-
-            LOG.info("repository " + repository);
-
-            relativePath = relativePath.replaceFirst(project, "").replaceFirst("/", "");
-
-            LOG.info("relativePath " + relativePath);
-
-            status = gitManager.getStatus(file, userHome);
 
         } catch (IOException e) {
             LOG.error(e);
             throw new FilesystemManagerException(e);
-        } catch (GitManagerException e) {
-            LOG.error(e);
-            throw new FilesystemManagerException(e);
         }
 
-        return status;
-
-
-
+        return "untracked";
     }
 
     /**
