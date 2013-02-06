@@ -284,7 +284,7 @@ public class MavenManager implements IMavenManager {
     private String command(String argument, String filePath, String logFIle) {
 
         return MAVEN_EXECUTABLE
-                + " "
+                + " -fae "
                 + argument
                 + " -f \""
                 + filePath
