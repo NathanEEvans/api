@@ -19,6 +19,7 @@ import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Item;
+import com.stormcloud.ide.model.filesystem.Save;
 
 /**
  *
@@ -101,7 +102,7 @@ public interface IFilesystemManager {
      * @return
      * @throws FilesystemManagerException
      */
-    String save(String filePath, String contents)
+    String save(Save save)
             throws FilesystemManagerException;
 
     /**

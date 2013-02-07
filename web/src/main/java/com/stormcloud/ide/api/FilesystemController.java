@@ -260,7 +260,7 @@ public class FilesystemController extends BaseController {
     /**
      * Save a file to disk
      *
-     * @param saveFile
+     * @param save
      * @return
      * @throws FilesystemManagerException
      */
@@ -268,14 +268,14 @@ public class FilesystemController extends BaseController {
     consumes = "application/json")
     @ResponseBody
     public String save(
-            @RequestBody Save saveFile)
+            @RequestBody Save save)
             throws FilesystemManagerException {
 
         LOG.debug(
-                "Saving filePath[" + saveFile.getFilePath() + "], "
-                + "contents[" + saveFile.getContents() + "]");
+                "Saving filePath[" + save.getFilePath() + "], "
+                + "contents[" + save.getContents() + "]");
 
-        return manager.save(saveFile.getFilePath(), saveFile.getContents());
+        return manager.save(save);
     }
 
     /**

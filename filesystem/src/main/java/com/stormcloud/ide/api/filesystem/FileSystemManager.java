@@ -27,7 +27,9 @@ import com.stormcloud.ide.model.factory.MavenModelFactory;
 import com.stormcloud.ide.model.factory.exception.MavenModelFactoryException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Item;
+import com.stormcloud.ide.model.filesystem.Save;
 import com.stormcloud.ide.model.user.UserSettings;
+import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -876,39 +878,46 @@ public class FileSystemManager implements IFilesystemManager {
     /**
      * Save a file to disk
      *
-     * @param filePath
-     * @param contents
+     * @param save
      */
     @Override
     public String save(
-            String filePath,
-            String contents)
+            Save save)
             throws FilesystemManagerException {
 
-        File file = new File(filePath);
+        File file = new File(save.getFilePath());
         String status = null;
 
         String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
+        String projectFolder = RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER);
 
         try {
 
-            FileUtils.writeStringToFile(file, contents);
+            FileUtils.writeStringToFile(file, save.getContents());
 
-            String relativePath = file.getAbsolutePath().replaceFirst(userHome, "").replaceFirst("/", "");
 
-            String project = relativePath.substring(0, relativePath.indexOf("/"));
+            // test if this is saved to the projects dir
+            // if so it should be versioned
+            // if not we don't bother
+            if (save.getFilePath().startsWith(projectFolder)) {
 
-            LOG.info("project " + project);
+                String relativePath = file.getAbsolutePath().replaceFirst(userHome, "").replaceFirst("/", "");
 
-            String repository = userHome + "/" + project;
+                String project = relativePath.substring(0, relativePath.indexOf('/'));
 
-            LOG.info("repository " + repository);
+                LOG.info("project " + project);
 
-            relativePath = relativePath.replaceFirst(project, "").replaceFirst("/", "");
+                String repository = userHome + "/" + project;
 
-            LOG.info("relativePath " + relativePath);
+                LOG.info("repository " + repository);
 
-            status = gitManager.getStatus(file, userHome);
+                relativePath = relativePath.replaceFirst(project, "").replaceFirst("/", "");
+
+                LOG.info("relativePath " + relativePath);
+
+                status = gitManager.getStatus(file, userHome);
+
+            }
 
         } catch (IOException e) {
             LOG.error(e);
