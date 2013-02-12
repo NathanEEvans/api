@@ -26,7 +26,7 @@
     <Realm className="org.apache.catalina.realm.JDBCRealm"
            debug="9"
            driverName="org.gjt.mm.mysql.Driver"
-           connectionURL="jdbc:mysql://localhost:3306/stormcloud?user=root&amp;password=apollo13"
+           connectionURL="jdbc:mysql://localhost:3306/stormcloud?user=stormcloud&amp;password=stormcloud"
            userTable="active_users"
            userNameCol="user_name"
            userCredCol="password"
