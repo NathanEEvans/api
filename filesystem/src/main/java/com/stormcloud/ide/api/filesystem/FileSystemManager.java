@@ -20,16 +20,18 @@ import com.stormcloud.ide.api.core.entity.FileType;
 import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
+import com.stormcloud.ide.api.core.thread.StreamGobbler;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.api.git.IGitManager;
 import com.stormcloud.ide.api.git.exception.GitManagerException;
 import com.stormcloud.ide.model.factory.MavenModelFactory;
 import com.stormcloud.ide.model.factory.exception.MavenModelFactoryException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
+import com.stormcloud.ide.model.filesystem.Find;
+import com.stormcloud.ide.model.filesystem.FindResult;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
 import com.stormcloud.ide.model.user.UserSettings;
-import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -50,6 +52,8 @@ public class FileSystemManager implements IFilesystemManager {
     private Logger LOG = Logger.getLogger(getClass());
     private IGitManager gitManager;
     private IStormCloudDao dao;
+    private static final String BASH = "/bin/sh";
+    private static final String COMMAND = "-c";
     private static final String CLOSED = "/.closed";
     private static final String POM = "/pom.xml";
     private static final String SETTINGS_XML = "/settings.xml";
@@ -931,6 +935,247 @@ public class FileSystemManager implements IFilesystemManager {
     }
 
     @Override
+    public FindResult find(Find find)
+            throws FilesystemManagerException {
+
+        String scope;
+        int exitVal;
+
+        // first check from where we are going to search
+        if (find.getScope() == null) {
+
+            scope = RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER);
+            LOG.info("Scope is All Opened Projects " + scope);
+
+        } else {
+
+            scope = find.getScope();
+            LOG.info("Scope is Project " + scope);
+        }
+
+        // check for text, filename patterns or both
+        String fileNamePatterns = find.getFileNamePatterns();
+        String text = find.getContainingText();
+
+        String findCommand;
+        String filePatternChain = "";
+        String[] patterns = null;
+
+        if (fileNamePatterns != null && !fileNamePatterns.isEmpty()) {
+
+            patterns = fileNamePatterns.split(",");
+
+            for (int i = 0; i < patterns.length; i++) {
+
+                filePatternChain += " --include=" + patterns[i].trim();
+            }
+        }
+
+        // construct text search
+        if (text != null && !text.isEmpty()) {
+
+            findCommand = "grep -rn "
+                    + (find.isMatchCase() ? "" : "-i")
+                    + " "
+                    + (find.isWholeWords() ? "-w" : "")
+                    + " "
+                    + filePatternChain
+                    + " "
+                    + "\"" + text + "\""
+                    + " " + scope;
+
+        } else {
+
+            // only find files with specified pattern
+            findCommand = "find " + scope;
+
+            filePatternChain = "";
+
+            if (patterns != null) {
+
+                for (int i = 0; i < patterns.length; i++) {
+
+                    filePatternChain += " -name \"" + patterns[i] + "\"";
+                }
+
+                findCommand += filePatternChain;
+            }
+        }
+
+        LOG.info(findCommand);
+
+        String[] run = {
+            BASH,
+            COMMAND,
+            findCommand};
+
+        try {
+
+
+            Process proc = Runtime.getRuntime().exec(run);
+
+            // any error message?
+            StreamGobbler errorGobbler =
+                    new StreamGobbler(proc.getErrorStream(), "ERROR");
+
+            // any output?
+            StreamGobbler outputGobbler =
+                    new StreamGobbler(proc.getInputStream(), "OUTPUT");
+
+            // kick them off
+            errorGobbler.start();
+            outputGobbler.start();
+
+            // any error???
+            exitVal = proc.waitFor();
+
+            LOG.info("Find returned " + exitVal);
+
+            FindResult result = new FindResult();
+
+            if (exitVal != 0) {
+
+                Item item = new Item();
+                item.setLabel("No Results");
+
+                result.getResult().add(item);
+
+                // ran into crap, return immediatly
+                return result;
+            }
+
+            Set<String> output = outputGobbler.getOutput();
+
+            // process result
+            for (String line : output) {
+
+                String[] fields = line.split(":");
+                Item item = new Item();
+
+                String id = fields[0];
+
+                String fileName = id.substring(id.lastIndexOf('/') + 1, id.length());
+
+                // set filepath as id
+                item.setId(id);
+                // set filename as label
+                item.setLabel(fileName);
+                item.setType(getFileType(fileName));
+
+                if (fields.length > 1) {
+
+                    item.setStatus("[" + fields[1] + "] " + fields[2].trim());
+                }
+
+                boolean added = false;
+
+                if (result.getResult().size() > 0) {
+
+                    // check if this file is already in there
+                    for (Item stashedItem : result.getResult()) {
+
+                        if (stashedItem.getId().equals(id)) {
+                            stashedItem.getChildren().add(item);
+                            added = true;
+                        }
+                    }
+
+                    if (!added) {
+                        result.getResult().add(item);
+                    }
+
+                } else {
+
+                    // for adding the first one
+                    result.getResult().add(item);
+                }
+            }
+
+            return result;
+
+
+        } catch (IOException e) {
+            LOG.error(e);
+            throw new FilesystemManagerException(e);
+        } catch (InterruptedException e) {
+            LOG.error(e);
+            throw new FilesystemManagerException(e);
+        }
+    }
+
+    private String getFileType(String fileName) {
+
+        if (fileName.endsWith(".java")) {
+
+            return "javaFile";
+
+        } else if (fileName.endsWith(".jsp")) {
+
+            return "jspFile";
+
+        } else if (fileName.endsWith(".xml")) {
+
+            return "xmlFile";
+
+        } else if (fileName.endsWith(".wsdl")) {
+
+            return "wsdlFile";
+
+        } else if (fileName.endsWith(".xsd")) {
+
+            return "xsdFile";
+
+        } else if (fileName.endsWith(".html")) {
+
+            return "htmlFile";
+
+        } else if (fileName.endsWith(".xhtml")) {
+
+            return "xhtmlFile";
+
+        } else if (fileName.endsWith(".txt")) {
+
+            return "textFile";
+
+        } else if (fileName.endsWith(".tld")) {
+
+            return "tldFile";
+
+        } else if (fileName.endsWith(".png")
+                || fileName.endsWith(".gif")
+                || fileName.endsWith(".jpg")
+                || fileName.endsWith(".jpeg")
+                || fileName.endsWith(".tiff")
+                || fileName.endsWith(".bmp")) {
+
+            return "imageFile";
+
+        } else if (fileName.endsWith(".js")) {
+
+            return "jsFile";
+
+        } else if (fileName.endsWith(".css")) {
+
+            return "cssFile";
+
+        } else if (fileName.endsWith(".sql")) {
+
+            return "sqlFile";
+
+        } else if (fileName.endsWith(".properties")) {
+
+            return "propertiesFile";
+
+        } else {
+
+            return "folder";
+
+        }
+
+
+    }
+
+    @Override
     public String create(
             String filePath,
             String fileType)
@@ -939,8 +1184,6 @@ public class FileSystemManager implements IFilesystemManager {
         boolean isFile = fileType.contains(".");
 
         File file = new File(filePath);
-        String status = null;
-        String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
 
         try {
 

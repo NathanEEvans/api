@@ -18,10 +18,7 @@ package com.stormcloud.ide.api;
 import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
-import com.stormcloud.ide.model.filesystem.Create;
-import com.stormcloud.ide.model.filesystem.Filesystem;
-import com.stormcloud.ide.model.filesystem.Item;
-import com.stormcloud.ide.model.filesystem.Save;
+import com.stormcloud.ide.model.filesystem.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -194,6 +191,7 @@ public class FilesystemController extends BaseController {
      * Delete a file
      *
      * @param filePath
+     * @return
      * @throws FilesystemManagerException
      */
     @RequestMapping(value = "/delete",
@@ -276,6 +274,20 @@ public class FilesystemController extends BaseController {
                 + "contents[" + save.getContents() + "]");
 
         return manager.save(save);
+    }
+
+    @RequestMapping(value = "/find",
+    method = RequestMethod.POST,
+    consumes = "application/json",
+    produces = "application/json")
+    @ResponseBody
+    public FindResult find(
+            @RequestBody Find find)
+            throws FilesystemManagerException {
+
+        LOG.info("Find " + find.getContainingText());
+
+        return manager.find(find);
     }
 
     /**

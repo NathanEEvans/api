@@ -18,6 +18,8 @@ package com.stormcloud.ide.api.filesystem;
 import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
+import com.stormcloud.ide.model.filesystem.Find;
+import com.stormcloud.ide.model.filesystem.FindResult;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
 
@@ -121,9 +123,19 @@ public interface IFilesystemManager {
      * Delete a file
      *
      * @param filePath
+     * @return
      * @throws FilesystemManagerException
      */
     int delete(String filePath)
+            throws FilesystemManagerException;
+
+    /**
+     *
+     * @param find
+     * @return
+     * @throws FilesystemManagerException
+     */
+    FindResult find(Find find)
             throws FilesystemManagerException;
 
     /**
@@ -148,6 +160,7 @@ public interface IFilesystemManager {
     /**
      *
      * @return @throws FilesystemManagerException
+     * @throws FilesystemManagerException
      */
     int emptyTrash()
             throws FilesystemManagerException;
@@ -155,6 +168,7 @@ public interface IFilesystemManager {
     /**
      *
      * @return @throws FilesystemManagerException
+     * @throws FilesystemManagerException
      */
     int hasTrash()
             throws FilesystemManagerException;
