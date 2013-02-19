@@ -976,7 +976,8 @@ public class FileSystemManager implements IFilesystemManager {
                     + filePatternChain
                     + " "
                     + "\"" + text + "\""
-                    + " " + scope;
+                    + " " + scope
+                    + " | grep -v /target/ ";
 
         } else {
 
