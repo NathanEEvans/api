@@ -32,9 +32,7 @@ import com.stormcloud.ide.model.filesystem.FindResult;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
 import com.stormcloud.ide.model.user.UserSettings;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import org.apache.commons.io.FileExistsException;
@@ -54,7 +52,6 @@ public class FileSystemManager implements IFilesystemManager {
     private IStormCloudDao dao;
     private static final String BASH = "/bin/sh";
     private static final String COMMAND = "-c";
-    private static final String CLOSED = "/.closed";
     private static final String POM = "/pom.xml";
     private static final String SETTINGS_XML = "/settings.xml";
     private static final String MULE_CONFIG = "/mule-config.xml";
@@ -107,18 +104,14 @@ public class FileSystemManager implements IFilesystemManager {
         // walk all project roots
         for (File file : files) {
 
-            File closed = new File(file.getAbsolutePath() + CLOSED);
+            Item item = new Item();
+            item.setId(file.getAbsolutePath());
+            item.setLabel(file.getName());
+            item.setType("folder");
 
-            if (!closed.exists()) {
-                Item item = new Item();
-                item.setId(file.getAbsolutePath());
-                item.setLabel(file.getName());
-                item.setType("folder");
+            filesystem.getChildren().add(item);
 
-                filesystem.getChildren().add(item);
-
-                walk(item, file, Filters.getProjectFilter(), false);
-            }
+            walk(item, file, Filters.getProjectFilter(), false);
         }
 
         return filesystem;
@@ -171,17 +164,12 @@ public class FileSystemManager implements IFilesystemManager {
 
         for (File file : files) {
 
-            File closed = new File(file.getAbsolutePath() + CLOSED);
+            Item item = new Item();
+            item.setId(file.getAbsolutePath());
+            item.setLabel(file.getName());
+            item.setType("project");
 
-            if (!closed.exists()) {
-
-                Item item = new Item();
-                item.setId(file.getAbsolutePath());
-                item.setLabel(file.getName());
-                item.setType("project");
-
-                items.add(item);
-            }
+            items.add(item);
         }
 
         return items.toArray(new Item[items.size()]);
@@ -198,26 +186,25 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        // list all files under the user home folder, 
-        // these are the project dirs
-        File[] files = new File(
-                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
-                Filters.getProjectFilter());
+        File[] files = null;
+
+        if (opened) {
+
+            files = new File(
+                    RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
+                    Filters.getProjectFilter());
+        } else {
+
+            files = new File(
+                    RemoteUser.get().getSetting(UserSettings.CLOSED_PROJECTS_FOLDER)).listFiles(
+                    Filters.getProjectFilter());
+
+        }
 
         // loop trough the project files
         for (File file : files) {
 
-            // check if this project is open and match with requested
-            // listing type (open true / false)
-            File closed = new File(file.getAbsolutePath() + CLOSED);
-
-            if (closed.exists() && opened) {
-
-                // project is closed and open projects are requested
-                // continue to the next project
-                continue;
-
-            } else if (closed.exists() && !opened) {
+            if (!opened) {
 
                 // project is closed and closed requested
                 // only add project folder
@@ -228,7 +215,7 @@ public class FileSystemManager implements IFilesystemManager {
 
                 filesystem.getChildren().add(item);
 
-            } else if (!closed.exists() && opened) {
+            } else {
 
                 // project is openend and open projects are requested
                 // process the project
@@ -709,12 +696,17 @@ public class FileSystemManager implements IFilesystemManager {
     @Override
     public int open(String filePath) throws FilesystemManagerException {
 
-        File file = new File(filePath + CLOSED);
+        try {
 
-        boolean succes = file.delete();
+            String project = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
 
-        if (!succes) {
-            throw new FilesystemManagerException("Failed to close Project");
+            FileUtils.moveDirectory(
+                    new File(RemoteUser.get().getSetting(UserSettings.CLOSED_PROJECTS_FOLDER) + "/" + project),
+                    new File(RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER) + "/" + project));
+
+        } catch (IOException e) {
+            LOG.error(e);
+            return -1;
         }
 
         return 0;
@@ -723,15 +715,17 @@ public class FileSystemManager implements IFilesystemManager {
     @Override
     public int close(String filePath) throws FilesystemManagerException {
 
-        File file = new File(filePath + CLOSED);
-
         try {
 
-            FileUtils.writeStringToFile(file, "");
+            String project = filePath.substring(filePath.lastIndexOf('/') + 1, filePath.length());
+
+            FileUtils.moveDirectory(
+                    new File(RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER) + "/" + project),
+                    new File(RemoteUser.get().getSetting(UserSettings.CLOSED_PROJECTS_FOLDER) + "/" + project));
 
         } catch (IOException e) {
             LOG.error(e);
-            throw new FilesystemManagerException(e);
+            return -1;
         }
 
         return 0;
@@ -942,7 +936,7 @@ public class FileSystemManager implements IFilesystemManager {
         int exitVal;
 
         // first check from where we are going to search
-        if (find.getScope() == null) {
+        if (find.getScope() == null || find.getScope().isEmpty()) {
 
             scope = RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER);
             LOG.info("Scope is All Opened Projects " + scope);
@@ -974,7 +968,7 @@ public class FileSystemManager implements IFilesystemManager {
         // construct text search
         if (text != null && !text.isEmpty()) {
 
-            findCommand = "grep -rn "
+            findCommand = "grep -rn -I "
                     + (find.isMatchCase() ? "" : "-i")
                     + " "
                     + (find.isWholeWords() ? "-w" : "")
@@ -1002,52 +996,53 @@ public class FileSystemManager implements IFilesystemManager {
             }
         }
 
-        LOG.info(findCommand);
+        File output = null;
+
+        try {
+
+            output = File.createTempFile("stormcloud", "out");
+
+        } catch (IOException e) {
+            LOG.error(e);
+            throw new FilesystemManagerException(e);
+        }
 
         String[] run = {
             BASH,
             COMMAND,
-            findCommand};
+            findCommand + " > " + output.getAbsolutePath()};
+
+        LOG.info("Writing to : " + output.getAbsolutePath());
+
+        Process proc;
 
         try {
 
+            LOG.info("Executing command : " + findCommand);
 
-            Process proc = Runtime.getRuntime().exec(run);
-
-            // any error message?
-            StreamGobbler errorGobbler =
-                    new StreamGobbler(proc.getErrorStream(), "ERROR");
+            proc = Runtime.getRuntime().exec(run);
 
             // any output?
             StreamGobbler outputGobbler =
-                    new StreamGobbler(proc.getInputStream(), "OUTPUT");
+                    new StreamGobbler(proc.getInputStream());
 
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             exitVal = proc.waitFor();
 
-            LOG.info("Find returned " + exitVal);
+            LOG.info("Find exit value " + exitVal + ", file size " + output.length());
 
             FindResult result = new FindResult();
 
-            if (exitVal != 0) {
 
-                Item item = new Item();
-                item.setLabel("No Results");
+            FileInputStream fstream = new FileInputStream(output);
 
-                result.getResult().add(item);
-
-                // ran into crap, return immediatly
-                return result;
-            }
-
-            Set<String> output = outputGobbler.getOutput();
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String line;
 
             // process result
-            for (String line : output) {
+            while ((line = br.readLine()) != null) {
 
                 String[] fields = line.split(":");
                 Item item = new Item();
@@ -1100,6 +1095,12 @@ public class FileSystemManager implements IFilesystemManager {
         } catch (InterruptedException e) {
             LOG.error(e);
             throw new FilesystemManagerException(e);
+        } finally {
+
+            if (output != null) {
+                output.delete();
+            }
+
         }
     }
 

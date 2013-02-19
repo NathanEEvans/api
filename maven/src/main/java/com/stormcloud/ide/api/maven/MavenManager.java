@@ -69,6 +69,8 @@ public class MavenManager implements IMavenManager {
 
         int exitVal = 1;
 
+        Process proc = null;
+
         try {
 
             /**
@@ -79,30 +81,20 @@ public class MavenManager implements IMavenManager {
                 COMMAND,
                 "echo ... > " + logHome + "/maven.log"};
 
-            Process proc = Runtime.getRuntime().exec(clear);
+            proc = Runtime.getRuntime().exec(clear);
 
-            // any error message?
-            StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
 
-            // any output?
-            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT");
-
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             exitVal = proc.waitFor();
 
             LOG.info("Clear file " + logHome + "/maven.log, status " + exitVal);
 
             if (exitVal != 0) {
-                // ran into crap, return immediatly
                 return exitVal;
             }
 
-            // parameterize archetype values (version, id, groupId)
-            // parameterize project root dir (now /data/maven)
             String command =
                     " cd " + projectHome + " ; "
                     + MAVEN_EXECUTABLE
@@ -146,23 +138,15 @@ public class MavenManager implements IMavenManager {
 
             proc = Runtime.getRuntime().exec(run);
 
-            // any error message?
-            errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
+            outputGobbler = new StreamGobbler(proc.getInputStream());
 
-            // any output?
-            outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT");
-
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             exitVal = proc.waitFor();
 
             LOG.info("Create Maven project " + project.getProjectName() + ", status " + proc.exitValue());
 
             if (exitVal != 0) {
-                // ran into crap, return immediatly
                 return exitVal;
             }
 
@@ -177,21 +161,13 @@ public class MavenManager implements IMavenManager {
 
             proc = Runtime.getRuntime().exec(git);
 
-            // any error message?
-            errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
+            outputGobbler = new StreamGobbler(proc.getInputStream());
 
-            // any output?
-            outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT");
-
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             exitVal = proc.waitFor();
 
             LOG.info("Init Git Repository " + project.getProjectName() + ", status " + proc.exitValue());
-
 
             return exitVal;
 
@@ -199,6 +175,11 @@ public class MavenManager implements IMavenManager {
             throw new MavenManagerException(e);
         } catch (InterruptedException e) {
             throw new MavenManagerException(e);
+        } finally {
+
+            if (proc != null) {
+                proc.destroy();
+            }
         }
     }
 
@@ -229,17 +210,10 @@ public class MavenManager implements IMavenManager {
 
             Process proc = Runtime.getRuntime().exec(clear);
 
-            // any error message?
-            StreamGobbler errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
+            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream());
 
-            // any output?
-            StreamGobbler outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT");
-
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             int exitVal = proc.waitFor();
 
             LOG.info("Cleared file " + logfile + ", status " + exitVal);
@@ -256,17 +230,10 @@ public class MavenManager implements IMavenManager {
 
             proc = Runtime.getRuntime().exec(run);
 
-            // any error message?
-            errorGobbler = new StreamGobbler(proc.getErrorStream(), "ERROR");
+            outputGobbler = new StreamGobbler(proc.getInputStream());
 
-            // any output?
-            outputGobbler = new StreamGobbler(proc.getInputStream(), "OUTPUT");
-
-            // kick them off
-            errorGobbler.start();
             outputGobbler.start();
 
-            // any error???
             exitVal = proc.waitFor();
 
             LOG.info("Maven project " + filePath + ", status " + proc.exitValue());

@@ -8,6 +8,7 @@ public enum UserSettings {
 
     USER_HOME,
     PROJECT_FOLDER,
+    CLOSED_PROJECTS_FOLDER,
     LOCAL_MAVEN_REPOSITORY,
     JAVA_HOME,
     TOMCAT_HOME,

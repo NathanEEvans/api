@@ -19,9 +19,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -29,14 +26,10 @@ import org.apache.log4j.Logger;
  */
 public class StreamGobbler extends Thread {
 
-    private Logger LOG = Logger.getLogger(getClass());
     private InputStream is;
-    private Set<String> output;
-    private String type;
 
-    public StreamGobbler(InputStream is, String type) {
+    public StreamGobbler(InputStream is) {
         this.is = is;
-        this.type = type;
     }
 
     /**
@@ -45,8 +38,6 @@ public class StreamGobbler extends Thread {
     @Override
     public void run() {
 
-        output = new HashSet<String>(0);
-
         try {
 
             InputStreamReader isr = new InputStreamReader(is);
@@ -54,15 +45,11 @@ public class StreamGobbler extends Thread {
             String line;
 
             while ((line = br.readLine()) != null) {
-                output.add(line);
+                System.out.println(line);
             }
 
         } catch (IOException e) {
-            LOG.error(e);
+            e.printStackTrace();
         }
-    }
-
-    public Set<String> getOutput() {
-        return output;
     }
 }
