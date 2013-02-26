@@ -35,22 +35,11 @@ public class StormCloudDao implements IStormCloudDao {
     private EntityManager manager;
 
     @Override
-    public List<FileType> getFileTypes() {
-
-        Query query = manager.createQuery("Select f From FileType f Order By f.label");
-
-        List<FileType> types = (List<FileType>) query.getResultList();
-
-        LOG.debug("Found " + types.size() + " FileTypes");
-
-        return types;
-    }
-
-    @Override
     public List<Archetype> getCatalog() {
 
         Query query = manager.createQuery("Select a From Archetype a");
 
+        @SuppressWarnings("unchecked")
         List<Archetype> archetypes = (List<Archetype>) query.getResultList();
 
         LOG.debug("Found " + archetypes.size() + " Archetypes");
@@ -95,6 +84,7 @@ public class StormCloudDao implements IStormCloudDao {
         query.setFirstResult(start);
         query.setMaxResults(count);
 
+        @SuppressWarnings("unchecked")
         List<Classpath> result = (List<Classpath>) query.getResultList();
 
         return result;

@@ -15,7 +15,6 @@ package com.stormcloud.ide.api.filesystem;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Find;
@@ -28,13 +27,6 @@ import com.stormcloud.ide.model.filesystem.Save;
  * @author martijn
  */
 public interface IFilesystemManager {
-
-    /**
-     *
-     * @return @throws FilesystemManagerException
-     */
-    FileTypes[] getFileTypes()
-            throws FilesystemManagerException;
 
     /**
      *

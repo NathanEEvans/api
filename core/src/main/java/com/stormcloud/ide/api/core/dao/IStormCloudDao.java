@@ -17,10 +17,7 @@ package com.stormcloud.ide.api.core.dao;
  */
 import com.stormcloud.ide.api.core.entity.Archetype;
 import com.stormcloud.ide.api.core.entity.Classpath;
-import com.stormcloud.ide.api.core.entity.FileType;
 import com.stormcloud.ide.api.core.entity.User;
-import com.stormcloud.ide.api.core.entity.Setting;
-import com.stormcloud.ide.model.user.UserSettings;
 import java.util.List;
 
 /**
@@ -28,8 +25,6 @@ import java.util.List;
  * @author martijn
  */
 public interface IStormCloudDao {
-
-    List<FileType> getFileTypes();
 
     List<Archetype> getCatalog();
 

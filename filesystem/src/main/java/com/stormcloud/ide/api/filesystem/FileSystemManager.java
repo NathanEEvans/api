@@ -16,8 +16,6 @@ package com.stormcloud.ide.api.filesystem;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
-import com.stormcloud.ide.api.core.entity.FileType;
-import com.stormcloud.ide.api.core.entity.FileTypes;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.core.thread.StreamGobbler;
@@ -68,8 +66,6 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        // list all files under the user home folder, 
-        // these are the project dirs
         File[] files = new File(
                 RemoteUser.get().getSetting(UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
                 Filters.getProjectFilter());
@@ -671,26 +667,6 @@ public class FileSystemManager implements IFilesystemManager {
                 }
             }
         }
-    }
-
-    @Override
-    public FileTypes[] getFileTypes()
-            throws FilesystemManagerException {
-
-        LOG.info("Get FileTypes");
-
-        List<FileType> fileTypes = dao.getFileTypes();
-
-        FileTypes[] types = new FileTypes[1];
-
-        Set<FileType> arch = new LinkedHashSet<FileType>(fileTypes);
-
-        FileTypes ft = new FileTypes();
-        ft.getChildren().addAll(arch);
-
-        types[0] = ft;
-
-        return types;
     }
 
     @Override
