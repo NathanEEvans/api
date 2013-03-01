@@ -206,8 +206,35 @@ public class FileSystemManager implements IFilesystemManager {
                 // only add project folder
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
-                item.setLabel(file.getName());
                 item.setType("closedProject");
+
+                if (new File(file.getAbsolutePath() + POM).exists()) {
+
+                    try {
+
+                        Model pom = MavenModelFactory.getProjectModel(
+                                new File(file.getAbsolutePath() + POM));
+
+                        if (pom.getName() == null || pom.getName().isEmpty()) {
+
+                            item.setLabel(file.getName());
+                        } else {
+
+                            item.setLabel(pom.getName());
+                        }
+
+                    } catch (MavenModelFactoryException e) {
+                        LOG.error(e);
+                        throw new FilesystemManagerException(e);
+                    }
+                } else {
+
+                    // No pom.xml found where expected
+                    // mark as malformed
+                    item.setId("none");
+                    item.setLabel(file.getName() + " [Malformed Project!]");
+                    item.setType("malformedProject");
+                }
 
                 filesystem.getChildren().add(item);
 
@@ -764,8 +791,6 @@ public class FileSystemManager implements IFilesystemManager {
 
         try {
 
-            User user = RemoteUser.get();
-
             File[] contents = new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
             for (File file : contents) {
@@ -790,8 +815,6 @@ public class FileSystemManager implements IFilesystemManager {
 
     @Override
     public int hasTrash() throws FilesystemManagerException {
-
-        User user = RemoteUser.get();
 
         File[] contents = new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER)).listFiles();
 
