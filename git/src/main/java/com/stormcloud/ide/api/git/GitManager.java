@@ -53,8 +53,6 @@ public class GitManager implements IGitManager {
     public String cloneRemoteRepository(String uri)
             throws GitManagerException {
 
-        User user = dao.getUser(RemoteUser.get().getUserName());
-
         CloneCommand cloneCommand = Git.cloneRepository();
 
         int start = uri.lastIndexOf("/");
@@ -84,7 +82,7 @@ public class GitManager implements IGitManager {
     @Override
     public IndexState getIndexState(String repository) throws GitManagerException {
 
-        IndexState andereNaam = new IndexState();
+        IndexState indexState = new IndexState();
 
         try {
 
@@ -98,23 +96,23 @@ public class GitManager implements IGitManager {
 
             diff.diff();
 
-            andereNaam.setAdded(diff.getAdded());
-            andereNaam.setAssumeUnchanged(diff.getAssumeUnchanged());
-            andereNaam.setChanged(diff.getChanged());
-            andereNaam.setConflicting(diff.getConflicting());
-            andereNaam.setIgnoredNotInIndex(diff.getIgnoredNotInIndex());
-            andereNaam.setMissing(diff.getMissing());
-            andereNaam.setModified(diff.getModified());
-            andereNaam.setRemoved(diff.getRemoved());
-            andereNaam.setUntracked(diff.getUntracked());
-            andereNaam.setUntrackedFolders(diff.getUntrackedFolders());
+            indexState.setAdded(diff.getAdded());
+            indexState.setAssumeUnchanged(diff.getAssumeUnchanged());
+            indexState.setChanged(diff.getChanged());
+            indexState.setConflicting(diff.getConflicting());
+            indexState.setIgnoredNotInIndex(diff.getIgnoredNotInIndex());
+            indexState.setMissing(diff.getMissing());
+            indexState.setModified(diff.getModified());
+            indexState.setRemoved(diff.getRemoved());
+            indexState.setUntracked(diff.getUntracked());
+            indexState.setUntrackedFolders(diff.getUntrackedFolders());
 
         } catch (IOException e) {
             LOG.error(e);
             throw new GitManagerException(e);
         }
 
-        return andereNaam;
+        return indexState;
     }
 
     @Override

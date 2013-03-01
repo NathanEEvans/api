@@ -506,8 +506,9 @@ public class FileSystemManager implements IFilesystemManager {
             pomFile.setType("projectSettings");
             pomFile.setLabel("Project Settings");
 
-            //status = gitManager.getStatus(repository, relativePath);
-            //pomFile.setStatus(status);
+            String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
+
+            pomFile.setStatus(status);
 
             project.getChildren().add(pomFile);
         }
