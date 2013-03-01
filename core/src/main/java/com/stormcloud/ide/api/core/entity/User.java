@@ -59,6 +59,8 @@ public class User implements Serializable {
     private String authorizationCode;
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Setting> settings;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<Preference> preferences;
 
     public Long getId() {
         return id;
@@ -114,6 +116,14 @@ public class User implements Serializable {
 
     public void setSettings(Set<Setting> settings) {
         this.settings = settings;
+    }
+
+    public Set<Preference> getPreferences() {
+        return preferences;
+    }
+
+    public void setPreferences(Set<Preference> preferences) {
+        this.preferences = preferences;
     }
 
     /**
