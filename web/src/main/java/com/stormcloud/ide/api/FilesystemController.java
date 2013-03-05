@@ -191,8 +191,25 @@ public class FilesystemController extends BaseController {
         return manager.delete(filePath);
     }
 
-    @RequestMapping(value = "/emptyTrash",
+    @RequestMapping(value = "/trash",
     method = RequestMethod.GET)
+    @ResponseBody
+    public Filesystem[] trash()
+            throws FilesystemManagerException {
+
+        LOG.debug("View Trash.");
+
+        Filesystem[] response = new Filesystem[1];
+
+        Filesystem filesystem = manager.viewTrash();
+
+        response[0] = filesystem;
+
+        return response;
+    }
+
+    @RequestMapping(value = "/emptyTrash",
+    method = RequestMethod.POST)
     @ResponseBody
     public int emptyTrash()
             throws FilesystemManagerException {

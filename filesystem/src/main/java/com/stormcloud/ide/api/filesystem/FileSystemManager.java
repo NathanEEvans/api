@@ -788,6 +788,122 @@ public class FileSystemManager implements IFilesystemManager {
     }
 
     @Override
+    public Filesystem viewTrash()
+            throws FilesystemManagerException {
+
+        Filesystem filesystem = new Filesystem();
+
+        // list all files under the user trash folder
+        File[] files = new File(
+                RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER)).listFiles();
+
+        // walk all roots in the trash
+        for (File file : files) {
+
+            Item item = new Item();
+            item.setId(file.getAbsolutePath());
+
+            if (file.getName().endsWith(".java")) {
+
+                item.setType("javaFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".jsp")) {
+
+                item.setType("jspFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".xml")) {
+
+                item.setType("xmlFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".wsdl")) {
+
+                item.setType("wsdlFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".xsd")) {
+
+                item.setType("xsdFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".html")) {
+
+                item.setType("htmlFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".xhtml")) {
+
+                item.setType("xhtmlFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".txt")) {
+
+                item.setType("textFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".tld")) {
+
+                item.setType("tldFile");
+                item.setLabel(file.getName());
+
+
+            } else if (file.getName().endsWith(".png")
+                    || file.getName().endsWith(".gif")
+                    || file.getName().endsWith(".jpg")
+                    || file.getName().endsWith(".jpeg")
+                    || file.getName().endsWith(".tiff")
+                    || file.getName().endsWith(".bmp")) {
+
+                item.setType("imageFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".js")) {
+
+                item.setType("jsFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".css")) {
+
+                item.setType("cssFile");
+                item.setLabel(file.getName());
+
+            } else if (file.getName().endsWith(".sql")) {
+
+                item.setType("sqlFile");
+                item.setLabel(file.getName());
+
+
+            } else if (file.getName().endsWith(".properties")) {
+
+                item.setType("propertiesFile");
+                item.setLabel(file.getName());
+
+            } else {
+
+                item.setType("folder");
+                item.setLabel(file.getName());
+
+            }
+
+            filesystem.getChildren().add(item);
+        }
+
+        if (filesystem.getChildren().isEmpty()) {
+
+            Item item = new Item();
+            item.setId("none");
+            item.setLabel("Your Trash is Empty!");
+            item.setType("noTrash");
+
+            filesystem.getChildren().add(item);
+        }
+
+        return filesystem;
+    }
+
+    @Override
     public int emptyTrash() throws FilesystemManagerException {
 
         try {

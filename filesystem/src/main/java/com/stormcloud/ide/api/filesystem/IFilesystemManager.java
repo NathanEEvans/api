@@ -152,6 +152,13 @@ public interface IFilesystemManager {
     /**
      *
      * @return @throws FilesystemManagerException
+     */
+    Filesystem viewTrash()
+            throws FilesystemManagerException;
+
+    /**
+     *
+     * @return @throws FilesystemManagerException
      * @throws FilesystemManagerException
      */
     int emptyTrash()

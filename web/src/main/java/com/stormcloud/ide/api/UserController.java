@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -46,5 +47,18 @@ public class UserController extends BaseController {
 
         // get user which was already set in the filer and return
         return RemoteUser.get();
+    }
+
+    @RequestMapping(method = RequestMethod.POST,
+    produces = "application/json",
+    consumes = "application/json")
+    @ResponseBody
+    public String savePreference(
+            @RequestParam String key,
+            @RequestParam String value) {
+
+
+
+        return "0";
     }
 }
