@@ -78,6 +78,7 @@ public class UserFilter implements Filter {
                     LOG.error("User not found.");
                     httpResponse.sendError(HttpStatus.FORBIDDEN.value());
                     httpResponse.flushBuffer();
+                    return;
                 }
 
                 RemoteUser.set(user);
@@ -114,6 +115,7 @@ public class UserFilter implements Filter {
                                 HttpStatus.INTERNAL_SERVER_ERROR.value());
 
                         httpResponse.flushBuffer();
+                        return;
 
                     } catch (IOException ioe) {
                         LOG.error(ioe);
@@ -158,6 +160,7 @@ public class UserFilter implements Filter {
                     LOG.info("Required credentials not found.");
                     httpResponse.sendError(HttpStatus.FORBIDDEN.value());
                     httpResponse.flushBuffer();
+                    return;
 
                 } else {
 
@@ -171,6 +174,7 @@ public class UserFilter implements Filter {
                     if (user == null) {
                         httpResponse.sendError(HttpStatus.FORBIDDEN.value());
                         httpResponse.flushBuffer();
+                        return;
                     }
 
                     RemoteUser.set(user);
@@ -186,6 +190,7 @@ public class UserFilter implements Filter {
                             LOG.warn("Invalid Key!");
                             httpResponse.sendError(HttpStatus.FORBIDDEN.value());
                             httpResponse.flushBuffer();
+                            return;
 
                         } else {
 
@@ -202,6 +207,7 @@ public class UserFilter implements Filter {
                             // no go
                             httpResponse.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
                             httpResponse.flushBuffer();
+                            return;
 
                         } catch (IOException ioe) {
                             LOG.error(ioe);

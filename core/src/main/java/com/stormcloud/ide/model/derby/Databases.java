@@ -1,5 +1,6 @@
-package com.stormcloud.ide.model.filesystem;
+package com.stormcloud.ide.model.derby;
 
+import com.stormcloud.ide.model.filesystem.Item;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -7,10 +8,10 @@ import java.util.Set;
  *
  * @author martijn
  */
-public class Filesystem {
+public class Databases {
 
-    private String id = "filesystem";
-    private String label = "filesystem";
+    private String id = "databases";
+    private String label = "databases";
     private String type = "root";
     private String status;
     private Set<Item> children = new LinkedHashSet<Item>(0);

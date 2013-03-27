@@ -1,0 +1,10 @@
+----------------------------------------------------------------
+Tue Mar 19 17:04:46 AST 2013:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.9.1.0 - (1344872): instance a816c00e-013d-8477-f157-0000045d1cf8 
+on database directory /home/stormcloud/derby/sample  with class loader sun.misc.Launcher$AppClassLoader@1f3e8d89 
+Loaded from file:/Users/martijn/.m2/repository/org/apache/derby/derby/10.9.1.0/derby-10.9.1.0.jar
+java.vendor=Apple Inc.
+java.runtime.version=1.6.0_43-b01-447-10M4203
+user.dir=/Users/martijn/Projects/stormcloud/sources/stormcloud-ide/api/derby
+derby.system.home=/home/stormcloud/derby
+Database Class Loader started - derby.database.classpath=''

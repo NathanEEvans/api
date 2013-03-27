@@ -15,17 +15,16 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
-import com.stormcloud.ide.api.filesystem.IFilesystemManager;
-import com.stormcloud.ide.api.tomcat.ITomcatManager;
+import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.services.Services;
+import com.stormcloud.ide.model.user.UserSettings;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Comparator;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,10 +39,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ServicesController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
-    @Autowired
-    private ITomcatManager tomcatManager;
-    @Autowired
-    IFilesystemManager filesystemManager;
 
     @RequestMapping(method = RequestMethod.GET,
     produces = "application/json")
@@ -104,8 +99,7 @@ public class ServicesController extends BaseController {
          * @todo add glassfish, jboss, weblogic
          */
         // add tomcat
-        servers.getChildren().add(tomcatManager.getTomcat());
-
+        //servers.getChildren().add(tomcatManager.getTomcat());
         // add servers to services
         services.getChildren().add(servers);
 
@@ -119,10 +113,7 @@ public class ServicesController extends BaseController {
         local.setLabel("Local");
         local.setType("localMavenRepository");
 
-        /**
-         * @todo get userhome from dao
-         */
-        File m2 = new File("/filesystem/martijn/.m2");
+        File m2 = new File(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY));
 
         FilenameFilter filter = new FilenameFilter() {
 

@@ -14,5 +14,6 @@ public enum UserSettings {
     TOMCAT_HOME,
     LOG_FOLDER,
     TRASH_FOLDER,
-    FILE_TEMPLATE_FOLDER
+    FILE_TEMPLATE_FOLDER,
+    DERBY_HOME
 }

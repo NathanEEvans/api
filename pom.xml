@@ -25,6 +25,7 @@
         <module>tomcat</module>
         <module>debug</module>
         <module>java</module>
+        <module>derby</module>
     </modules>
     
     <dependencyManagement>
