@@ -34,18 +34,6 @@ public class UserController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
 
-    @RequestMapping(method = RequestMethod.POST,
-    consumes = "application/json",
-    produces = "application/json")
-    @ResponseBody
-    public String createAccount() {
-
-        LOG.info("Get User.");
-
-        // get user which was already set in the filer and return
-        return "";
-    }
-
     /**
      *
      * @return

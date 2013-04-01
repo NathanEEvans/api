@@ -1,6 +1,6 @@
 package com.stormcloud.ide.api.user;
 
-import com.stormcloud.ide.api.core.entity.User;
+import com.stormcloud.ide.api.user.exception.UserManagerException;
 
 /**
  *
@@ -8,9 +8,16 @@ import com.stormcloud.ide.api.core.entity.User;
  */
 public interface IUserManager {
 
-    String createAccount();
+    String createAccount(
+            String userName,
+            String password,
+            String emailAddress)
+            throws UserManagerException;
 
-    String confirmAccount();
+    String confirmAccount(
+            String userName,
+            String authorizationCode)
+            throws UserManagerException;
 
     String changeEmail();
 

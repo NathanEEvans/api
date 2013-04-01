@@ -52,7 +52,7 @@
 
     <mvc:annotation-driven/>
 
-    <bean id="UserFilter" class="com.stormcloud.ide.api.filter.UserFilter"/>
+    <bean id="userFilter" class="com.stormcloud.ide.api.filter.UserFilter"/>
 
 
 </beans>

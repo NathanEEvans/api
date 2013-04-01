@@ -57,7 +57,15 @@ public class UserFilter implements Filter {
 
             MDC.put("api", httpRequest.getRequestURI());
 
-            if (httpRequest.getRequestURI().endsWith("/api/login")) {
+            if (httpRequest.getRequestURI().endsWith("/api/createAccount")) {
+
+
+                // intercept and do something with create account
+                return;
+
+
+
+            } else if (httpRequest.getRequestURI().endsWith("/api/login")) {
 
 
                 // configure MDC for the remainging trip
@@ -92,6 +100,8 @@ public class UserFilter implements Filter {
 
                     keyCookie.setMaxAge(60 * 60 * 24); // 1 day
 
+                    keyCookie.setPath("/");
+
                     httpResponse.addCookie(keyCookie);
 
                     // set the username cookie
@@ -100,6 +110,8 @@ public class UserFilter implements Filter {
                             user.getUserName());
 
                     userCookie.setMaxAge(60 * 60 * 24); // 1 day
+
+                    userCookie.setPath("/");
 
                     httpResponse.addCookie(userCookie);
 

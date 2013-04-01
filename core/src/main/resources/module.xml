@@ -37,18 +37,18 @@
 
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
 
-    <tx:annotation-driven transaction-manager="StormCloudTransactionManager" />
+    <tx:annotation-driven transaction-manager="stormCloudTransactionManager" />
 
-    <bean id="StormCloudTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <bean id="stormCloudTransactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory" />
     </bean>
 
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceUnitName" value="StormCloudPU" />
-        <property name="dataSource" ref="StormCloudDataSource" />
+        <property name="dataSource" ref="stormCloudDataSource" />
     </bean>
     
-    <bean id="StormCloudDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+    <bean id="stormCloudDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
         <property name="driverClass" value="com.mysql.jdbc.Driver" />
         <property name="jdbcUrl" value="${stormcloud.db.url}" />
         <property name="user" value="${stormcloud.db.username}" />
@@ -58,6 +58,16 @@
         <property name="acquireIncrement" value="1" />
     </bean>
 
-    <bean id="StormCloudDao" class="com.stormcloud.ide.api.core.dao.StormCloudDao"/>
+    <bean id="stormCloudDao" class="com.stormcloud.ide.api.core.dao.StormCloudDao"/>
+    
+    <bean id="mailManager" class="com.stormcloud.ide.api.core.mail.MailManager">
+        <constructor-arg index="0" value="${mail.smtp.auth}"/>
+        <constructor-arg index="1" value="${mail.smtp.starttls.enable}"/>
+        <constructor-arg index="2" value="${mail.smtp.host}"/>
+        <constructor-arg index="3" value="${mail.smtp.port}"/>
+        <property name="username" value="${mail.username}"/>
+        <property name="password" value="${mail.password}"/>
+        <property name="from" value="${mail.from}"/>
+    </bean>
     
 </beans>
