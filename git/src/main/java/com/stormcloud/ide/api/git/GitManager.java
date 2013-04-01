@@ -73,6 +73,7 @@ public class GitManager implements IGitManager {
             cloneCommand.call();
 
         } catch (GitAPIException e) {
+            LOG.error(e);
             throw new GitManagerException(e);
         }
 

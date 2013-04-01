@@ -98,7 +98,7 @@ public class MavenManager implements IMavenManager {
             String command =
                     " cd " + projectHome + " ; "
                     + MAVEN_EXECUTABLE
-                    + " "
+                    + " --settings " + RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + "/settings.xml "
                     + " archetype:generate -DarchetypeGroupId="
                     + project.getArchetypeGroupId()
                     + " -DarchetypeArtifactId="
@@ -250,6 +250,7 @@ public class MavenManager implements IMavenManager {
     private String command(String argument, String filePath, String logFIle) {
 
         return MAVEN_EXECUTABLE
+                + " --settings " + RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + "/settings.xml "
                 + " -fae "
                 + argument
                 + " -f \""
