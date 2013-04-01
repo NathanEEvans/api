@@ -26,6 +26,7 @@
         <module>debug</module>
         <module>java</module>
         <module>derby</module>
+        <module>user</module>
     </modules>
     
     <dependencyManagement>
