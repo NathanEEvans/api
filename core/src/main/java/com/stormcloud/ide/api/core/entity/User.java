@@ -17,6 +17,8 @@ package com.stormcloud.ide.api.core.entity;
  */
 import com.stormcloud.ide.model.user.UserSettings;
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,6 +28,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
@@ -52,8 +56,16 @@ public class User implements Serializable {
     @JsonIgnore
     @Column(name = "password", nullable = false)
     private String password;
+    @Column(name = "full_name")
+    private String fullName;
+    @Column(name = "screen_name")
+    private String screenName;
     @Column(name = "email_address", nullable = false, unique = true)
     private String emailAddress;
+    @Column(name = "city")
+    private String city;
+    @Column(name = "country")
+    private String country;
     @JsonIgnore
     @Column(name = "authorization_code")
     private String authorizationCode;
@@ -61,6 +73,13 @@ public class User implements Serializable {
     private Set<Setting> settings;
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Preference> preferences;
+    @Column(name = "gravatar")
+    private String gravatar;
+    @Column(name = "joined")
+    @Temporal(TemporalType.DATE)
+    private Date joined;
+    @Column(name = "website")
+    private String website;
 
     public Long getId() {
         return id;
@@ -124,6 +143,62 @@ public class User implements Serializable {
 
     public void setPreferences(Set<Preference> preferences) {
         this.preferences = preferences;
+    }
+
+    public String getGravatar() {
+        return gravatar;
+    }
+
+    public void setGravatar(String gravatar) {
+        this.gravatar = gravatar;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getScreenName() {
+        return screenName;
+    }
+
+    public void setScreenName(String screenName) {
+        this.screenName = screenName;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Date getJoined() {
+        return joined;
+    }
+
+    public void setJoined(Date joined) {
+        this.joined = joined;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
     /**
