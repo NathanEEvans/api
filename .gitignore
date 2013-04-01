@@ -11,3 +11,4 @@ catalog.xml
 *.war
 *.ear
 !/core/src/main/cometd/cometd-demo-2.5.0.war
+/.git-rewrite/
