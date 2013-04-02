@@ -1,9 +1,12 @@
 package com.stormcloud.ide.api.core.dao;
 
 import com.stormcloud.ide.api.core.entity.*;
+import com.stormcloud.ide.model.user.Coder;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -36,6 +39,35 @@ public class StormCloudDao implements IStormCloudDao {
     }
 
     @Override
+    public Coder[] getCoders() {
+
+        LOG.info("Get Coders");
+
+        Query query = manager.createQuery("SELECT u FROM User u");
+
+        @SuppressWarnings("unchecked")
+        List<User> users = (List<User>) query.getResultList();
+
+        List<Coder> coders = new LinkedList<Coder>();
+
+        for (User user : users) {
+
+            Coder coder = new Coder();
+            coder.setCountry(user.getCountry());
+            coder.setEmailAddress(user.getEmailAddress());
+            coder.setFullName(user.getFullName());
+            coder.setGravatar(user.getGravatar());
+            coder.setHomeTown(user.getCity());
+            coder.setJoined(user.getJoined());
+            coder.setUserName(user.getUserName());
+
+            coders.add(coder);
+        }
+
+        return coders.toArray(new Coder[users.size()]);
+    }
+
+    @Override
     public User getUser(String userName) {
 
         LOG.info("Get User for [" + userName + "]");
@@ -56,7 +88,8 @@ public class StormCloudDao implements IStormCloudDao {
 
     @Override
     public void save(User user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        manager.persist(user);
     }
 
     @Override

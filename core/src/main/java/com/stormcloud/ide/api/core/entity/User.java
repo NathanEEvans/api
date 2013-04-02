@@ -80,6 +80,9 @@ public class User implements Serializable {
     private Date joined;
     @Column(name = "website")
     private String website;
+    @Column(name = "last_login")
+    @Temporal(TemporalType.DATE)
+    private Date lastLogin;
 
     public Long getId() {
         return id;
@@ -199,6 +202,14 @@ public class User implements Serializable {
 
     public void setWebsite(String website) {
         this.website = website;
+    }
+
+    public Date getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(Date lastLogin) {
+        this.lastLogin = lastLogin;
     }
 
     /**

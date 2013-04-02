@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 import javax.servlet.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -88,6 +89,11 @@ public class UserFilter implements Filter {
                     httpResponse.flushBuffer();
                     return;
                 }
+
+                // update last login
+                user.setLastLogin(Calendar.getInstance().getTime());
+
+                dao.save(user);
 
                 RemoteUser.set(user);
 

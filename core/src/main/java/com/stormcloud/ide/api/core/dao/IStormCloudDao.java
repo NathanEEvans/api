@@ -18,6 +18,7 @@ package com.stormcloud.ide.api.core.dao;
 import com.stormcloud.ide.api.core.entity.Archetype;
 import com.stormcloud.ide.api.core.entity.Classpath;
 import com.stormcloud.ide.api.core.entity.User;
+import com.stormcloud.ide.model.user.Coder;
 import java.util.List;
 
 /**
@@ -33,6 +34,8 @@ public interface IStormCloudDao {
     void save(User user);
 
     void delete(User user);
+
+    Coder[] getCoders();
 
     List<Classpath> searchJdkClasspath(String searchKey, int start, int count);
 }

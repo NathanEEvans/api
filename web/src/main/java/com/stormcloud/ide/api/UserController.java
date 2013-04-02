@@ -15,9 +15,12 @@ package com.stormcloud.ide.api;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
+import com.stormcloud.ide.model.user.Coder;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +36,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class UserController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
+    @Autowired
+    private IStormCloudDao dao;
+
+    @RequestMapping(value = "/coders",
+    method = RequestMethod.GET,
+    produces = "application/json")
+    @ResponseBody
+    public Coder[] getCoders() {
+
+        LOG.info("Get Coders.");
+
+        return dao.getCoders();
+    }
 
     /**
      *
