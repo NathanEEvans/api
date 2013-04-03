@@ -112,7 +112,7 @@ public class StormCloudDao implements IStormCloudDao {
 
         preference.setValue(value);
 
-        manager.persist(preference);
+        manager.merge(preference);
     }
 
     @Override

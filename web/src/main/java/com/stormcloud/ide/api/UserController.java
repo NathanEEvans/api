@@ -66,15 +66,17 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/preference",
-    method = RequestMethod.POST,
-    produces = "application/json",
-    consumes = "application/json")
+    method = RequestMethod.POST)
     @ResponseBody
     public String savePreference(
-            @RequestParam String key,
-            @RequestParam String value) {
+            @RequestParam(value = "key", required = true) String key,
+            @RequestParam(value = "value", required = true) String value) {
 
 
+        LOG.debug("Save preference key[" + key + "], value[" + value + "]");
+
+
+        dao.savePreference(key, value);
 
         return "0";
     }
