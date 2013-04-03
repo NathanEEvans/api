@@ -17,6 +17,7 @@ public class Coder {
     private String country;
     private String gravatar;
     private Date joined;
+    private Date lastSeen;
 
     public String getCountry() {
         return country;
@@ -72,5 +73,13 @@ public class Coder {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public Date getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setLastSeen(Date lastSeen) {
+        this.lastSeen = lastSeen;
     }
 }

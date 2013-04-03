@@ -37,5 +37,7 @@ public interface IStormCloudDao {
 
     Coder[] getCoders();
 
+    void savePreference(String key, String value);
+
     List<Classpath> searchJdkClasspath(String searchKey, int start, int count);
 }

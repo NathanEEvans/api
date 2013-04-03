@@ -65,7 +65,8 @@ public class UserController extends BaseController {
         return RemoteUser.get();
     }
 
-    @RequestMapping(method = RequestMethod.POST,
+    @RequestMapping(value = "/preference",
+    method = RequestMethod.POST,
     produces = "application/json",
     consumes = "application/json")
     @ResponseBody

@@ -54,7 +54,7 @@ public class UserFilter implements Filter {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-            LOG.info("Filter Request [" + request.getRemoteAddr() + ", " + request.getRemoteHost() + "]");
+            LOG.info("Filter Request [" + request.getRemoteAddr() + "]");
 
             MDC.put("api", httpRequest.getRequestURI());
 
@@ -82,6 +82,7 @@ public class UserFilter implements Filter {
                 // Get user from db and add to the localthread
                 User user = dao.getUser(httpRequest.getRemoteUser());
 
+                
                 if (user == null) {
 
                     LOG.error("User not found.");

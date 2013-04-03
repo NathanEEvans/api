@@ -1,6 +1,7 @@
 package com.stormcloud.ide.api.core.dao;
 
 import com.stormcloud.ide.api.core.entity.*;
+import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.model.user.Coder;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -60,6 +61,7 @@ public class StormCloudDao implements IStormCloudDao {
             coder.setHomeTown(user.getCity());
             coder.setJoined(user.getJoined());
             coder.setUserName(user.getUserName());
+            coder.setLastSeen(user.getLastLogin());
 
             coders.add(coder);
         }
@@ -89,12 +91,28 @@ public class StormCloudDao implements IStormCloudDao {
     @Override
     public void save(User user) {
 
-        manager.persist(user);
+        manager.merge(user);
+
     }
 
     @Override
     public void delete(User user) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void savePreference(String key, String value) {
+
+        Query query = manager.createQuery("Select p From Preference p Where p.user.id = :userId and p.key = :key");
+
+        query.setParameter("userId", RemoteUser.get().getId());
+        query.setParameter("key", key);
+
+        Preference preference = (Preference) query.getSingleResult();
+
+        preference.setValue(value);
+
+        manager.persist(preference);
     }
 
     @Override
