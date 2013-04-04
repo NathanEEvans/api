@@ -3,6 +3,7 @@ package com.stormcloud.ide.api.core.dao;
 import com.stormcloud.ide.api.core.entity.*;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.model.user.Coder;
+import com.stormcloud.ide.model.user.UserInfo;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -54,12 +55,12 @@ public class StormCloudDao implements IStormCloudDao {
         for (User user : users) {
 
             Coder coder = new Coder();
-            coder.setCountry(user.getCountry());
-            coder.setEmailAddress(user.getEmailAddress());
-            coder.setFullName(user.getFullName());
-            coder.setGravatar(user.getGravatar());
-            coder.setHomeTown(user.getCity());
-            coder.setJoined(user.getJoined());
+            coder.setCountry(user.getInfo(UserInfo.COUNTRY));
+            coder.setEmailAddress(user.getInfo(UserInfo.EMAIL_ADDRESS));
+            coder.setFullName(user.getInfo(UserInfo.FULL_NAME));
+            coder.setGravatar(user.getInfo(UserInfo.GRAVATAR));
+            coder.setHomeTown(user.getInfo(UserInfo.CITY));
+            coder.setJoined(user.getInfo(UserInfo.JOINED));
             coder.setUserName(user.getUserName());
             coder.setLastSeen(user.getLastLogin());
 
@@ -83,7 +84,7 @@ public class StormCloudDao implements IStormCloudDao {
         result = (User) query.getSingleResult();
 
         // add gravatar url
-        result.setGravatar(createGravatarUrl(result.getEmailAddress()));
+        result.setInfo(UserInfo.GRAVATAR, createGravatarUrl(result.getInfo(UserInfo.EMAIL_ADDRESS)));
 
         return result;
     }
@@ -97,7 +98,8 @@ public class StormCloudDao implements IStormCloudDao {
 
     @Override
     public void delete(User user) {
-        throw new UnsupportedOperationException("Not supported yet.");
+
+        manager.remove(user);
     }
 
     @Override
@@ -113,6 +115,44 @@ public class StormCloudDao implements IStormCloudDao {
         preference.setValue(value);
 
         manager.merge(preference);
+    }
+
+    @Override
+    public void saveInfo(String key, String value) {
+
+        Query query = manager.createQuery("Select i From Info i Where i.user.id = :userId and i.key = :key");
+
+        query.setParameter("userId", RemoteUser.get().getId());
+        query.setParameter("key", key);
+
+        Info info = (Info) query.getSingleResult();
+
+        info.setValue(value);
+
+        manager.merge(info);
+    }
+
+    @Override
+    public String changePassword(String currentPassword, String newPassword) {
+
+        LOG.info("Change password for User [" + RemoteUser.get().getUserName() + "]");
+
+        User result;
+
+        Query query = manager.createQuery("SELECT u FROM User u WHERE u.userName = :userName");
+
+        query.setParameter("userName", RemoteUser.get().getUserName());
+
+        result = (User) query.getSingleResult();
+
+
+        if (result.getPassword().equals(currentPassword)) {
+            result.setPassword(newPassword);
+        } else {
+            return "Current password incorrect.";
+        }
+
+        return "0";
     }
 
     @Override

@@ -16,7 +16,7 @@ public class Coder {
     private String homeTown;
     private String country;
     private String gravatar;
-    private Date joined;
+    private String joined;
     private Date lastSeen;
 
     public String getCountry() {
@@ -59,11 +59,11 @@ public class Coder {
         this.homeTown = homeTown;
     }
 
-    public Date getJoined() {
+    public String getJoined() {
         return joined;
     }
 
-    public void setJoined(Date joined) {
+    public void setJoined(String joined) {
         this.joined = joined;
     }
 

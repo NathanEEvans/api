@@ -39,5 +39,9 @@ public interface IStormCloudDao {
 
     void savePreference(String key, String value);
 
+    void saveInfo(String key, String value);
+
+    String changePassword(String currentPassword, String newPassword);
+
     List<Classpath> searchJdkClasspath(String searchKey, int start, int count);
 }

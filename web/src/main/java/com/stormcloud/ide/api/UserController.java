@@ -80,4 +80,47 @@ public class UserController extends BaseController {
 
         return "0";
     }
+
+    @RequestMapping(value = "/info",
+    method = RequestMethod.POST)
+    @ResponseBody
+    public String saveSetting(
+            @RequestParam(value = "key", required = true) String key,
+            @RequestParam(value = "value", required = true) String value) {
+
+
+        LOG.debug("Save info key[" + key + "], value[" + value + "]");
+
+
+        dao.saveInfo(key, value);
+
+        return "0";
+    }
+
+    @RequestMapping(value = "/password",
+    method = RequestMethod.POST)
+    @ResponseBody
+    public String changePassword(
+            @RequestParam(value = "currentPassword", required = true) String currentPassword,
+            @RequestParam(value = "newPassword", required = true) String newPassword) {
+
+        LOG.debug("Change Password");
+
+        return dao.changePassword(currentPassword, newPassword);
+    }
+
+    @RequestMapping(value = "/delete",
+    method = RequestMethod.POST)
+    @ResponseBody
+    public String deleteAccount(
+            @RequestParam(value = "currentPassword", required = true) String currentPassword,
+            @RequestParam(value = "newPassword", required = true) String newPassword) {
+
+        LOG.debug("Delete Account");
+
+
+        // dao.saveInfo(key, value);
+
+        return "0";
+    }
 }
