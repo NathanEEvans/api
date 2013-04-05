@@ -19,7 +19,8 @@ public interface IUserManager {
             String authorizationCode)
             throws UserManagerException;
 
-    String changeEmail();
-
-    String changePassword();
+    String changePassword(
+            String currentPassword,
+            String newPassword)
+            throws UserManagerException;
 }

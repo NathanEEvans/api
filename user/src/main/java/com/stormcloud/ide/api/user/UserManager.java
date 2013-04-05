@@ -63,16 +63,6 @@ public class UserManager implements IUserManager {
         return "0";
     }
 
-    @Override
-    public String changeEmail() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String changePassword() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public IStormCloudDao getDao() {
         return dao;
     }
@@ -87,5 +77,10 @@ public class UserManager implements IUserManager {
 
     public void setMailManager(IMailManager mailManager) {
         this.mailManager = mailManager;
+    }
+
+    @Override
+    public String changePassword(String currentPassword, String newPassword) throws UserManagerException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -18,6 +18,7 @@ package com.stormcloud.ide.api;
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
+import com.stormcloud.ide.api.user.IUserManager;
 import com.stormcloud.ide.model.user.Coder;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class UserController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
+    // @todo, the dao needs to be removed from the controller
     @Autowired
     private IStormCloudDao dao;
+    @Autowired
+    private IUserManager userManager;
 
     @RequestMapping(value = "/coders",
     method = RequestMethod.GET,
@@ -106,6 +110,7 @@ public class UserController extends BaseController {
 
         LOG.debug("Change Password");
 
+        // @todo move to userManager
         return dao.changePassword(currentPassword, newPassword);
     }
 
@@ -119,7 +124,7 @@ public class UserController extends BaseController {
         LOG.debug("Delete Account");
 
 
-        // dao.saveInfo(key, value);
+        // userManager.saveInfo(key, value);
 
         return "0";
     }

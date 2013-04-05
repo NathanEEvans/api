@@ -38,8 +38,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class LogController {
 
     private Logger LOG = Logger.getLogger(getClass());
-    @Autowired
-    private IStormCloudDao dao;
 
     @RequestMapping(value = "/maven",
     method = RequestMethod.GET)
