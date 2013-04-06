@@ -15,6 +15,7 @@ package com.stormcloud.ide.api.core.dao;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.stormcloud.ide.api.core.dao.exception.StormcloudDaoException;
 import com.stormcloud.ide.api.core.entity.Archetype;
 import com.stormcloud.ide.api.core.entity.Classpath;
 import com.stormcloud.ide.api.core.entity.User;
@@ -41,7 +42,7 @@ public interface IStormCloudDao {
 
     void saveInfo(String key, String value);
 
-    String changePassword(String currentPassword, String newPassword);
+    String changePassword(String currentPassword, String newPassword) throws StormcloudDaoException;
 
     List<Classpath> searchJdkClasspath(String searchKey, int start, int count);
 }

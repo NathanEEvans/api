@@ -1,5 +1,6 @@
 package com.stormcloud.ide.api.core.dao;
 
+import com.stormcloud.ide.api.core.dao.exception.StormcloudDaoException;
 import com.stormcloud.ide.api.core.entity.*;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.model.user.Coder;
@@ -133,7 +134,8 @@ public class StormCloudDao implements IStormCloudDao {
     }
 
     @Override
-    public String changePassword(String currentPassword, String newPassword) {
+    public String changePassword(String currentPassword, String newPassword)
+            throws StormcloudDaoException {
 
         LOG.info("Change password for User [" + RemoteUser.get().getUserName() + "]");
 
@@ -146,13 +148,43 @@ public class StormCloudDao implements IStormCloudDao {
         result = (User) query.getSingleResult();
 
 
-        if (result.getPassword().equals(currentPassword)) {
-            result.setPassword(newPassword);
+        String currentHash = md5Hash(currentPassword);
+        String newHash = md5Hash(newPassword);
+
+        if (result.getPassword().equals(currentHash)) {
+            result.setPassword(newHash);
         } else {
             return "Current password incorrect.";
         }
 
         return "0";
+    }
+
+    public String md5Hash(String input)
+            throws StormcloudDaoException {
+
+        String original = input;
+
+        try {
+
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            md.update(original.getBytes());
+
+            byte[] digest = md.digest();
+
+            StringBuilder sb = new StringBuilder("");
+
+            for (byte b : digest) {
+                sb.append(Integer.toHexString(b & 0xff));
+            }
+
+            return sb.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            LOG.error(e);
+            throw new StormcloudDaoException(e);
+        }
     }
 
     @Override

@@ -16,6 +16,7 @@ package com.stormcloud.ide.api;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.remote.RemoteUser;
+import com.stormcloud.ide.api.tomcat.ITomcatManager;
 import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.services.Services;
@@ -25,6 +26,7 @@ import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Comparator;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,6 +41,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class ServicesController extends BaseController {
 
     private Logger LOG = Logger.getLogger(getClass());
+    @Autowired
+    private ITomcatManager tomcatManager;
 
     @RequestMapping(method = RequestMethod.GET,
     produces = "application/json")
@@ -99,7 +103,7 @@ public class ServicesController extends BaseController {
          * @todo add glassfish, jboss, weblogic
          */
         // add tomcat
-        //servers.getChildren().add(tomcatManager.getTomcat());
+        servers.getChildren().add(tomcatManager.getTomcat());
         // add servers to services
         services.getChildren().add(servers);
 

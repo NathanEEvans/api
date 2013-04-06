@@ -16,6 +16,7 @@ package com.stormcloud.ide.api;
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
+import com.stormcloud.ide.api.core.dao.exception.StormcloudDaoException;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.user.IUserManager;
@@ -106,7 +107,8 @@ public class UserController extends BaseController {
     @ResponseBody
     public String changePassword(
             @RequestParam(value = "currentPassword", required = true) String currentPassword,
-            @RequestParam(value = "newPassword", required = true) String newPassword) {
+            @RequestParam(value = "newPassword", required = true) String newPassword)
+            throws StormcloudDaoException {
 
         LOG.debug("Change Password");
 
