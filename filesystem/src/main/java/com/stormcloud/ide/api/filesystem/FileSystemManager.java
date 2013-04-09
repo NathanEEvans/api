@@ -229,6 +229,18 @@ public class FileSystemManager implements IFilesystemManager {
                     }
                 } else {
 
+
+                    // @todo test if it's an Ant project
+
+                    // else @todo test if it's a PHP project
+
+                    // else @todo open as plain 'free' project
+                    //            which will also include html/javascript 
+                    //            projects and gives the advantage that a
+                    //            project is always opened so you might be 
+                    //            able to fix your 'mis-understood' project.
+
+
                     // No pom.xml found where expected
                     // mark as malformed
                     item.setId("none");
