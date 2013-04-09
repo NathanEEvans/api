@@ -82,7 +82,7 @@ public class UserFilter implements Filter {
                 // Get user from db and add to the localthread
                 User user = dao.getUser(httpRequest.getRemoteUser());
 
-                
+
                 if (user == null) {
 
                     LOG.error("User not found.");
@@ -108,6 +108,7 @@ public class UserFilter implements Filter {
                     keyCookie.setMaxAge(60 * 60 * 24); // 1 day
 
                     keyCookie.setPath("/");
+                    keyCookie.setSecure(true);
 
                     httpResponse.addCookie(keyCookie);
 
@@ -119,6 +120,7 @@ public class UserFilter implements Filter {
                     userCookie.setMaxAge(60 * 60 * 24); // 1 day
 
                     userCookie.setPath("/");
+                    userCookie.setSecure(true);
 
                     httpResponse.addCookie(userCookie);
 
