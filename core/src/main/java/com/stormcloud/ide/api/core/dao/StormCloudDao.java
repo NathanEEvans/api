@@ -151,8 +151,13 @@ public class StormCloudDao implements IStormCloudDao {
         String currentHash = md5Hash(currentPassword);
         String newHash = md5Hash(newPassword);
 
+
+        LOG.debug("current " + result.getPassword() + " match " + currentHash);
+
         if (result.getPassword().equals(currentHash)) {
+
             result.setPassword(newHash);
+
         } else {
             return "Current password incorrect.";
         }
