@@ -16,7 +16,7 @@ public class Item {
     private String type;
     private String status;
     private String buildName;
-    private Set<Item> children = new LinkedHashSet<Item>();
+    private Set<Item> children = new LinkedHashSet<Item>(0);
 
     public String getId() {
         return id;

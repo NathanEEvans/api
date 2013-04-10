@@ -582,89 +582,8 @@ public class FileSystemManager implements IFilesystemManager {
                     }
                 }
 
-                if (file.getName().endsWith(".java")) {
-
-                    item.setType("javaFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".jsp")) {
-
-                    item.setType("jspFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".xml")) {
-
-                    item.setType("xmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".wsdl")) {
-
-                    item.setType("wsdlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".xsd")) {
-
-                    item.setType("xsdFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".html")) {
-
-                    item.setType("htmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".xhtml")) {
-
-                    item.setType("xhtmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".txt")) {
-
-                    item.setType("textFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".tld")) {
-
-                    item.setType("tldFile");
-                    item.setLabel(file.getName());
-
-
-                } else if (file.getName().endsWith(".png")
-                        || file.getName().endsWith(".gif")
-                        || file.getName().endsWith(".jpg")
-                        || file.getName().endsWith(".jpeg")
-                        || file.getName().endsWith(".tiff")
-                        || file.getName().endsWith(".bmp")) {
-
-                    item.setType("imageFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".js")) {
-
-                    item.setType("jsFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".css")) {
-
-                    item.setType("cssFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".sql")) {
-
-                    item.setType("sqlFile");
-                    item.setLabel(file.getName());
-
-
-                } else if (file.getName().endsWith(".properties")) {
-
-                    item.setType("propertiesFile");
-                    item.setLabel(file.getName());
-
-                } else {
-
-                    item.setType("folder");
-                    item.setLabel(file.getName());
-
-                }
+                item.setLabel(file.getName());
+                item.setType(getFileType(file));
 
                 if (file.isDirectory()) {
 
@@ -814,90 +733,8 @@ public class FileSystemManager implements IFilesystemManager {
 
             Item item = new Item();
             item.setId(file.getAbsolutePath());
-
-            if (file.getName().endsWith(".java")) {
-
-                item.setType("javaFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".jsp")) {
-
-                item.setType("jspFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".xml")) {
-
-                item.setType("xmlFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".wsdl")) {
-
-                item.setType("wsdlFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".xsd")) {
-
-                item.setType("xsdFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".html")) {
-
-                item.setType("htmlFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".xhtml")) {
-
-                item.setType("xhtmlFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".txt")) {
-
-                item.setType("textFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".tld")) {
-
-                item.setType("tldFile");
-                item.setLabel(file.getName());
-
-
-            } else if (file.getName().endsWith(".png")
-                    || file.getName().endsWith(".gif")
-                    || file.getName().endsWith(".jpg")
-                    || file.getName().endsWith(".jpeg")
-                    || file.getName().endsWith(".tiff")
-                    || file.getName().endsWith(".bmp")) {
-
-                item.setType("imageFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".js")) {
-
-                item.setType("jsFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".css")) {
-
-                item.setType("cssFile");
-                item.setLabel(file.getName());
-
-            } else if (file.getName().endsWith(".sql")) {
-
-                item.setType("sqlFile");
-                item.setLabel(file.getName());
-
-
-            } else if (file.getName().endsWith(".properties")) {
-
-                item.setType("propertiesFile");
-                item.setLabel(file.getName());
-
-            } else {
-
-                item.setType("folder");
-                item.setLabel(file.getName());
-
-            }
+            item.setLabel(file.getName());
+            item.setType(getFileType(file));
 
             filesystem.getChildren().add(item);
         }
@@ -1184,7 +1021,7 @@ public class FileSystemManager implements IFilesystemManager {
                 item.setId(id);
                 // set filename as label
                 item.setLabel(fileName);
-                item.setType(getFileType(fileName));
+                item.setType(getFileType(new File(fileName)));
 
                 if (fields.length > 1) {
 
@@ -1233,76 +1070,91 @@ public class FileSystemManager implements IFilesystemManager {
         }
     }
 
-    private String getFileType(String fileName) {
+    private String getFileType(File file) {
 
-        if (fileName.endsWith(".java")) {
 
-            return "javaFile";
-
-        } else if (fileName.endsWith(".jsp")) {
-
-            return "jspFile";
-
-        } else if (fileName.endsWith(".xml")) {
-
-            return "xmlFile";
-
-        } else if (fileName.endsWith(".wsdl")) {
-
-            return "wsdlFile";
-
-        } else if (fileName.endsWith(".xsd")) {
-
-            return "xsdFile";
-
-        } else if (fileName.endsWith(".html")) {
-
-            return "htmlFile";
-
-        } else if (fileName.endsWith(".xhtml")) {
-
-            return "xhtmlFile";
-
-        } else if (fileName.endsWith(".txt")) {
-
-            return "textFile";
-
-        } else if (fileName.endsWith(".tld")) {
-
-            return "tldFile";
-
-        } else if (fileName.endsWith(".png")
-                || fileName.endsWith(".gif")
-                || fileName.endsWith(".jpg")
-                || fileName.endsWith(".jpeg")
-                || fileName.endsWith(".tiff")
-                || fileName.endsWith(".bmp")) {
-
-            return "imageFile";
-
-        } else if (fileName.endsWith(".js")) {
-
-            return "jsFile";
-
-        } else if (fileName.endsWith(".css")) {
-
-            return "cssFile";
-
-        } else if (fileName.endsWith(".sql")) {
-
-            return "sqlFile";
-
-        } else if (fileName.endsWith(".properties")) {
-
-            return "propertiesFile";
-
-        } else {
+        if (file.isDirectory()) {
 
             return "folder";
 
+        } else if (file.getName().endsWith(".java")) {
+
+            return "javaFile";
+
+        } else if (file.getName().endsWith(".jsp")) {
+
+            return "jspFile";
+
+        } else if (file.getName().endsWith(".xml")) {
+
+            return "xmlFile";
+
+        } else if (file.getName().endsWith(".wsdl")) {
+
+            return "wsdlFile";
+
+        } else if (file.getName().endsWith(".xsd")) {
+
+            return "xsdFile";
+
+        } else if (file.getName().endsWith(".html")) {
+
+            return "htmlFile";
+
+        } else if (file.getName().endsWith(".xhtml")) {
+
+            return "xhtmlFile";
+
+        } else if (file.getName().endsWith(".txt")) {
+
+            return "textFile";
+
+        } else if (file.getName().endsWith(".tld")) {
+
+            return "tldFile";
+
+        } else if (file.getName().endsWith(".png")
+                || file.getName().endsWith(".gif")
+                || file.getName().endsWith(".jpg")
+                || file.getName().endsWith(".jpeg")
+                || file.getName().endsWith(".tiff")
+                || file.getName().endsWith(".bmp")) {
+
+            return "imageFile";
+
+        } else if (file.getName().endsWith(".js")) {
+
+            return "jsFile";
+
+        } else if (file.getName().endsWith(".css")) {
+
+            return "cssFile";
+
+        } else if (file.getName().endsWith(".sql")) {
+
+            return "sqlFile";
+
+        } else if (file.getName().endsWith(".properties")) {
+
+            return "propertiesFile";
+
+        } else if (file.getName().endsWith(".MF")) {
+
+            return "manifestFile";
+
+        } else if (file.getName().endsWith(".yaml")) {
+
+            return "yamlFile";
+
+        } else if (file.getName().endsWith(".sh")) {
+
+            return "bashFile";
+
+
+        } else {
+
+            return "textFile";
         }
-
-
     }
 
     @Override
