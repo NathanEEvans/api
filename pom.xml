@@ -18,6 +18,7 @@
     
     <modules>
         <module>core</module>
+        <module>project</module>
         <module>git</module>
         <module>maven</module>
         <module>filesystem</module>

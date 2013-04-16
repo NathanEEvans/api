@@ -77,7 +77,7 @@ public class FilesystemController extends BaseController {
 
         Filesystem[] response = new Filesystem[1];
 
-        Filesystem filesystem = manager.bare();
+        Filesystem filesystem = manager.getFilesystem();
 
         response[0] = filesystem;
 

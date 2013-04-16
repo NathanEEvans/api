@@ -1,20 +1,5 @@
 package com.stormcloud.ide.api.filesystem;
 
-/*
- * #%L Stormcloud IDE - API - Filesystem %% Copyright (C) 2012 - 2013 Stormcloud
- * IDE %% This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
- */
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
@@ -29,6 +14,7 @@ import com.stormcloud.ide.model.filesystem.Find;
 import com.stormcloud.ide.model.filesystem.FindResult;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
+import com.stormcloud.ide.model.project.ProjectType;
 import com.stormcloud.ide.model.user.UserSettings;
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -50,12 +36,11 @@ public class FileSystemManager implements IFilesystemManager {
     private IStormCloudDao dao;
     private static final String BASH = "/bin/sh";
     private static final String COMMAND = "-c";
-    private static final String POM = "/pom.xml";
+    private static final String POM_FILE = "/pom.xml";
+    private static final String ANT_BUILD_FILE = "/pom.xml";
     private static final String SETTINGS_XML = "/settings.xml";
-    private static final String MULE_CONFIG = "/mule-config.xml";
     private static final String SOURCE_DIR = "/src/main/java";
     private static final String RESOURCE_DIR = "/src/main/resources";
-    private static final String MULE_CONFIG_DIR = "/src/main/app";
     private static final String WEB_DIR = "/src/main/webapp";
     private static final String TEST_SOURCE_DIR = "/src/test/java";
     private static final String TEST_RESOURCE_DIR = "/src/test/resources";
@@ -66,9 +51,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         Filesystem filesystem = new Filesystem();
 
-        File[] files = new File(
-                RemoteUser.get().getSetting(UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
-                Filters.getProjectFilter());
+        File[] files = listTemplates();
 
         for (File file : files) {
 
@@ -86,18 +69,13 @@ public class FileSystemManager implements IFilesystemManager {
     }
 
     @Override
-    public Filesystem bare()
+    public Filesystem getFilesystem()
             throws FilesystemManagerException {
 
         Filesystem filesystem = new Filesystem();
 
-        // list all files under the user home folder, 
-        // these are the project dirs
-        File[] files = new File(
-                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
-                Filters.getProjectFilter());
+        File[] files = listOpenedProjects();
 
-        // walk all project roots
         for (File file : files) {
 
             Item item = new Item();
@@ -117,16 +95,11 @@ public class FileSystemManager implements IFilesystemManager {
     public Filesystem folderPicker(String root)
             throws FilesystemManagerException {
 
-        LOG.info("Browse from " + root);
-
         Filesystem filesystem = new Filesystem();
 
-        // list all files under the user home folder, 
-        // these are the project dirs
         File[] files = new File(root).listFiles(
                 Filters.getProjectFilter());
 
-        // walk all project roots
         for (File file : files) {
 
             if (file.isDirectory()) {
@@ -150,8 +123,6 @@ public class FileSystemManager implements IFilesystemManager {
             throws FilesystemManagerException {
 
 
-        // list all files under the user home folder, 
-        // these are the project dirs
         File[] files = new File(
                 RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
@@ -197,7 +168,7 @@ public class FileSystemManager implements IFilesystemManager {
 
         }
 
-        // loop trough the project files
+        // loop trough the project folders
         for (File file : files) {
 
             if (!opened) {
@@ -207,17 +178,19 @@ public class FileSystemManager implements IFilesystemManager {
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
                 item.setType("closedProject");
+                item.setDirectory(true);
 
-                if (new File(file.getAbsolutePath() + POM).exists()) {
+                if (new File(file.getAbsolutePath() + POM_FILE).exists()) {
 
                     try {
 
                         Model pom = MavenModelFactory.getProjectModel(
-                                new File(file.getAbsolutePath() + POM));
+                                new File(file.getAbsolutePath() + POM_FILE));
 
                         if (pom.getName() == null || pom.getName().isEmpty()) {
 
                             item.setLabel(file.getName());
+
                         } else {
 
                             item.setLabel(pom.getName());
@@ -235,9 +208,9 @@ public class FileSystemManager implements IFilesystemManager {
                     // else @todo test if it's a PHP project
 
                     // else @todo open as plain 'free' project
-                    //            which will also include html/javascript 
+                    //            which will also include html/javascript
                     //            projects and gives the advantage that a
-                    //            project is always opened so you might be 
+                    //            project is always opened so you might be
                     //            able to fix your 'mis-understood' project.
 
 
@@ -255,9 +228,9 @@ public class FileSystemManager implements IFilesystemManager {
                 // project is openend and open projects are requested
                 // process the project
 
-                // check for pom file to validate if the project is 
+                // check for pom file to validate if the project is
                 // well-formed, when pom not found return malformed project
-                if (new File(file.getAbsolutePath() + POM).exists()) {
+                if (new File(file.getAbsolutePath() + POM_FILE).exists()) {
 
                     // read the pom to see what type of project it is
                     Model pom;
@@ -265,7 +238,7 @@ public class FileSystemManager implements IFilesystemManager {
                     try {
 
                         pom = MavenModelFactory.getProjectModel(
-                                new File(file.getAbsolutePath() + POM));
+                                new File(file.getAbsolutePath() + POM_FILE));
 
                         String packaging = pom.getPackaging();
 
@@ -299,7 +272,7 @@ public class FileSystemManager implements IFilesystemManager {
                             // done with the modules add the root pom
                             // so it ends up last
                             Item pomFile = new Item();
-                            pomFile.setId(file.getAbsolutePath() + POM);
+                            pomFile.setId(file.getAbsolutePath() + POM_FILE);
                             pomFile.setType("projectSettings");
                             pomFile.setLabel("Project Settings");
                             String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
@@ -371,6 +344,76 @@ public class FileSystemManager implements IFilesystemManager {
         return filesystem;
     }
 
+    /**
+     * Retrieve the project File array from the PROJECT_FOLDER.
+     *
+     * @return File Array of project 'roots'
+     */
+    public File[] listOpenedProjects() {
+
+        return new File(
+                RemoteUser.get().getSetting(
+                UserSettings.PROJECT_FOLDER)).listFiles(
+                Filters.getProjectFilter());
+    }
+
+    /**
+     * Retrieve the project FIle array from the CLOSED_PROJECT_FOLDER.
+     *
+     * @return File array of project 'roots'
+     */
+    public File[] listClosedProjects() {
+
+        return new File(
+                RemoteUser.get().getSetting(
+                UserSettings.CLOSED_PROJECTS_FOLDER)).listFiles(
+                Filters.getProjectFilter());
+    }
+
+    /**
+     * Retrieve the available File Template folders.
+     *
+     * @return File array of template 'roots'
+     */
+    public File[] listTemplates() {
+
+        return new File(
+                RemoteUser.get().getSetting(
+                UserSettings.FILE_TEMPLATE_FOLDER)).listFiles(
+                Filters.getProjectFilter());
+    }
+
+    /**
+     * Determines what type of project the file represents.
+     *
+     * Either a MAVEN, ant or 'generic' project. Generic can be any
+     * HTML/PHP/JavaScript project. It's a 'free form project, no compiling or
+     * 'building' is needed, the project type is specific to how it's run not
+     * how we should present the layout.
+     *
+     * @param file
+     * @return ProjectType
+     */
+    public ProjectType getProjectType(File file) {
+
+        // it has to be a directory
+        if (!file.isDirectory()) {
+            return ProjectType.INVALID;
+        }
+
+        // check if it's a maven project
+        if (new File(file.getAbsolutePath() + POM_FILE).exists()) {
+            return ProjectType.MAVEN;
+        }
+
+        // check if it's an ant project
+        if (new File(file.getAbsolutePath() + ANT_BUILD_FILE).exists()) {
+            return ProjectType.ANT;
+        }
+
+        return ProjectType.GENERIC;
+    }
+
     private Item processModule(
             File dir,
             boolean root)
@@ -380,8 +423,9 @@ public class FileSystemManager implements IFilesystemManager {
         Item project = new Item();
         project.setId(dir.getAbsolutePath());
         project.setType("project");
+        project.setDirectory(true);
 
-        if (!new File(dir.getAbsolutePath() + POM).exists()) {
+        if (!new File(dir.getAbsolutePath() + POM_FILE).exists()) {
 
             // No pom.xml found where expected
             // mark as malformed
@@ -392,41 +436,21 @@ public class FileSystemManager implements IFilesystemManager {
             return item;
         }
 
-        Model pom = MavenModelFactory.getProjectModel(
-                new File(dir.getAbsolutePath() + POM));
+        Model pom = MavenModelFactory.getProjectModel(new File(dir.getAbsolutePath() + POM_FILE));
+
 
         // use name from the pom when available
         // otherwise the folder name
         if (pom.getName() == null || pom.getName().isEmpty()) {
 
             project.setLabel(dir.getName());
+
         } else {
 
             project.setLabel(pom.getName());
         }
 
-
-        if (pom.getBuild() == null || pom.getBuild().getFinalName() == null || pom.getBuild().getFinalName().isEmpty()) {
-
-            project.setBuildName(dir.getName() + "-" + pom.getVersion());
-
-        } else {
-
-            project.setBuildName(pom.getBuild().getFinalName());
-        }
-
-
         String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
-
-        if (new File(dir.getAbsolutePath() + MULE_CONFIG_DIR).exists()) {
-
-            Item muleConfig = new Item();
-            muleConfig.setLabel("Flow Design");
-            muleConfig.setType("flowDesign");
-            muleConfig.setId(dir.getAbsolutePath() + MULE_CONFIG_DIR + MULE_CONFIG);
-
-            project.getChildren().add(muleConfig);
-        }
 
         // if there is a webapp dir, process it
         if (new File(dir.getAbsolutePath() + WEB_DIR).exists()) {
@@ -451,6 +475,7 @@ public class FileSystemManager implements IFilesystemManager {
             sources.setId(dir.getAbsolutePath() + SOURCE_DIR);
             sources.setLabel("Source Packages");
             sources.setType("sources");
+            sources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + SOURCE_DIR, userHome);
             sources.setStatus(status);
@@ -467,6 +492,7 @@ public class FileSystemManager implements IFilesystemManager {
             resources.setId(dir.getAbsolutePath() + RESOURCE_DIR);
             resources.setLabel("Resources");
             resources.setType("resources");
+            resources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, userHome);
             resources.setStatus(status);
@@ -483,6 +509,7 @@ public class FileSystemManager implements IFilesystemManager {
             sources.setId(dir.getAbsolutePath() + TEST_SOURCE_DIR);
             sources.setLabel("Test Source Packages");
             sources.setType("sources");
+            sources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_SOURCE_DIR, userHome);
             sources.setStatus(status);
@@ -499,6 +526,7 @@ public class FileSystemManager implements IFilesystemManager {
             resources.setId(dir.getAbsolutePath() + TEST_RESOURCE_DIR);
             resources.setLabel("Test Resources");
             resources.setType("resources");
+            resources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_RESOURCE_DIR, userHome);
             resources.setStatus(status);
@@ -508,13 +536,10 @@ public class FileSystemManager implements IFilesystemManager {
             walk(resources, new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter(), true);
         }
 
-        /**
-         * @todo fix git status for pom's
-         */
         // add the pom, at the bottom
         if (!root) {
             Item pomFile = new Item();
-            pomFile.setId(dir.getAbsolutePath() + POM);
+            pomFile.setId(dir.getAbsolutePath() + POM_FILE);
             pomFile.setType("projectSettings");
             pomFile.setLabel("Project Settings");
 
@@ -569,6 +594,7 @@ public class FileSystemManager implements IFilesystemManager {
                 // create new item
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
+                item.setDirectory(file.isDirectory());
 
                 if (versioning) {
 

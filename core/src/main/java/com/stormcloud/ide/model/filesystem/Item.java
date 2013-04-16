@@ -13,13 +13,9 @@ public class Item {
 
     private String id;
     private String label;
-    private String labelClass;
-    private String iconClass;
-    private String badge;
     private String type;
     private String status;
     private boolean directory;
-    private String buildName;
     private Set<Item> children = new LinkedHashSet<Item>(0);
 
     public String getId() {
@@ -36,30 +32,6 @@ public class Item {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    public String getBadge() {
-        return badge;
-    }
-
-    public void setBadge(String badge) {
-        this.badge = badge;
-    }
-
-    public String getIconClass() {
-        return iconClass;
-    }
-
-    public void setIconClass(String iconClass) {
-        this.iconClass = iconClass;
-    }
-
-    public String getLabelClass() {
-        return labelClass;
-    }
-
-    public void setLabelClass(String labelClass) {
-        this.labelClass = labelClass;
     }
 
     public String getType() {
@@ -84,14 +56,6 @@ public class Item {
 
     public void setDirectory(boolean directory) {
         this.directory = directory;
-    }
-
-    public String getBuildName() {
-        return buildName;
-    }
-
-    public void setBuildName(String buildName) {
-        this.buildName = buildName;
     }
 
     public Set<Item> getChildren() {

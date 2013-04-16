@@ -1,20 +1,5 @@
 package com.stormcloud.ide.api.filesystem;
 
-/*
- * #%L Stormcloud IDE - API - Filesystem %% Copyright (C) 2012 - 2013 Stormcloud
- * IDE %% This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option) any
- * later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
- */
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.Filesystem;
 import com.stormcloud.ide.model.filesystem.Find;
@@ -23,32 +8,43 @@ import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
 
 /**
+ * Provides the various methods to retrieve Filesystem items.
  *
  * @author martijn
  */
 public interface IFilesystemManager {
 
     /**
+     * Get the Templates used for creating new files or folder.
      *
-     * @return @throws FilesystemManagerException
+     * @return Filesystem with appropriate Item children.
+     * @throws FilesystemManagerException
      */
-    Filesystem bare()
+    Filesystem getFileTemplates()
             throws FilesystemManagerException;
 
     /**
+     * Get the opened projects from the FileSystem 'as is'.
+     *
+     * Represents the opened projects without any project type specific
+     * presentation, you get the bare FileSystem layout as it is.
+     *
+     * @return Filesystem with appropriate Item children.
+     * @throws FilesystemManagerException
+     */
+    Filesystem getFilesystem()
+            throws FilesystemManagerException;
+
+    /**
+     * Represents the folder structure starting at the given root.
+     *
+     * This method will only return folders, no files.
      *
      * @param root
-     * @return
+     * @return Filesystem with appropriate Item children.
      * @throws FilesystemManagerException
      */
     Filesystem folderPicker(String root)
-            throws FilesystemManagerException;
-
-    /**
-     *
-     * @return @throws FilesystemManagerException
-     */
-    Filesystem getFileTemplates()
             throws FilesystemManagerException;
 
     /**
