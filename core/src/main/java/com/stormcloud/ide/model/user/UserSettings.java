@@ -15,5 +15,6 @@ public enum UserSettings {
     LOG_FOLDER,
     TRASH_FOLDER,
     FILE_TEMPLATE_FOLDER,
-    DERBY_HOME
+    DERBY_HOME,
+    SSH_HOME
 }

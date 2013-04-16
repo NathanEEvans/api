@@ -32,6 +32,10 @@ public interface IStormCloudDao {
 
     User getUser(String userName);
 
+    boolean emailAddressExists(String emailAddress);
+
+    String md5Hash(String input) throws StormcloudDaoException;
+
     void save(User user);
 
     void delete(User user);

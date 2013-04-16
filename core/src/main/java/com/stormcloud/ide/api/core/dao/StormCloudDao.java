@@ -8,10 +8,10 @@ import com.stormcloud.ide.model.user.UserInfo;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import org.apache.log4j.Logger;
@@ -76,25 +76,64 @@ public class StormCloudDao implements IStormCloudDao {
 
         LOG.info("Get User for [" + userName + "]");
 
-        User result;
+        User result = null;
 
-        Query query = manager.createQuery("SELECT u FROM User u WHERE u.userName = :userName");
+        try {
 
-        query.setParameter("userName", userName);
+            Query query = manager.createQuery("SELECT u FROM User u WHERE u.userName = :userName");
 
-        result = (User) query.getSingleResult();
+            query.setParameter("userName", userName);
 
-        // add gravatar url
-        result.setInfo(UserInfo.GRAVATAR, createGravatarUrl(result.getInfo(UserInfo.EMAIL_ADDRESS)));
+            result = (User) query.getSingleResult();
+
+            // add gravatar url
+            result.setInfo(UserInfo.GRAVATAR, createGravatarUrl(result.getInfo(UserInfo.EMAIL_ADDRESS)));
+
+        } catch (NoResultException e) {
+            LOG.debug("User not found.");
+        }
 
         return result;
     }
 
     @Override
+    public boolean emailAddressExists(String emailAddress) {
+
+        LOG.info("Check email address [" + emailAddress + "]");
+
+        try {
+
+            Query query = manager.createQuery("SELECT i FROM Info i WHERE i.key = 'EMAIL_ADDRESS' AND i.value = :emailAddress");
+
+            query.setParameter("emailAddress", emailAddress);
+
+            Info info = (Info) query.getSingleResult();
+
+            if (info != null) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (NoResultException e) { 
+            LOG.debug("Email Address not found.");
+            return false;
+        }
+    }
+
+    @Override
     public void save(User user) {
 
-        manager.merge(user);
+        LOG.debug("Saving " + user.getUserName());
 
+        if (user.getId() == null) {
+
+            manager.persist(user);
+
+        } else {
+
+            manager.merge(user);
+        }
     }
 
     @Override
@@ -211,7 +250,7 @@ public class StormCloudDao implements IStormCloudDao {
 
     private String createGravatarUrl(String email) {
 
-        String url = "http://www.gravatar.com/avatar/" + md5Hex(email.toLowerCase());
+        String url = "https://secure.gravatar.com/avatar/" + md5Hex(email.toLowerCase());
 
         return url;
     }

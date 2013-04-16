@@ -9,6 +9,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -16,6 +17,7 @@ import javax.mail.internet.MimeMessage;
  */
 public class MailManager implements IMailManager {
 
+    private Logger LOG = Logger.getLogger(getClass());
     private String username;
     private String password;
     private String from;
@@ -41,6 +43,9 @@ public class MailManager implements IMailManager {
             String body)
             throws MailManagerException {
 
+
+        LOG.debug("Sending mail " + recipient + " [" + subject + "] [" + body + "]");
+
         Session session = Session.getInstance(getProps(),
                 new javax.mail.Authenticator() {
 
@@ -60,6 +65,8 @@ public class MailManager implements IMailManager {
             message.setText(body);
 
             Transport.send(message);
+
+            LOG.debug("Message sent.");
 
         } catch (MessagingException e) {
             throw new MailManagerException(e);
