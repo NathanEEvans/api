@@ -16,6 +16,7 @@ public interface IUserManager {
 
     String confirmAccount(
             String userName,
+            String emailAdress,
             String authorizationCode)
             throws UserManagerException;
 
