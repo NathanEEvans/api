@@ -15,6 +15,9 @@ package com.stormcloud.ide.api.git;
  * You should have received a copy of the GNU General Public License along with
  * this program. If not, see <http://www.gnu.org/licenses/gpl-3.0.html>. #L%
  */
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
@@ -36,9 +39,13 @@ import org.eclipse.jgit.lib.IndexDiff;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepository;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig.Host;
+import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.util.FS;
 
 /**
  *
@@ -52,6 +59,34 @@ public class GitManager implements IGitManager {
     @Override
     public String cloneRemoteRepository(String uri)
             throws GitManagerException {
+
+
+        SshSessionFactory.setInstance(new JschConfigSessionFactory() {
+
+            @Override
+            protected void configure(Host hc, Session session) {
+
+                try {
+
+                    session.setConfig("StrictHostKeyChecking", "no");
+
+                    String keyLocation = RemoteUser.get().getSetting(UserSettings.SSH_HOME) + "/" + RemoteUser.get().getUserName();
+                    String knownHosts = RemoteUser.get().getSetting(UserSettings.SSH_HOME) + "/known_hosts";
+
+                    LOG.debug("KeyLoacation " + keyLocation);
+                    LOG.debug("KnownHosts " + knownHosts);
+
+
+                    JSch jsch = getJSch(hc, FS.DETECTED);
+                    jsch.addIdentity(keyLocation);
+                    jsch.setKnownHosts(knownHosts);
+
+                } catch (JSchException e) {
+                    LOG.error(e);
+                }
+            }
+        });
+
 
         CloneCommand cloneCommand = Git.cloneRepository();
 
