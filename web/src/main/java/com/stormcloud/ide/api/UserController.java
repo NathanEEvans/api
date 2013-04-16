@@ -20,6 +20,7 @@ import com.stormcloud.ide.api.core.dao.exception.StormcloudDaoException;
 import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.user.IUserManager;
+import com.stormcloud.ide.api.user.exception.UserManagerException;
 import com.stormcloud.ide.model.user.Coder;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +115,20 @@ public class UserController extends BaseController {
 
         // @todo move to userManager
         return dao.changePassword(currentPassword, newPassword);
+    }
+
+    @RequestMapping(value = "createAccount",
+    method = RequestMethod.POST)
+    @ResponseBody
+    public String createAccount(
+            @RequestParam(value = "userName", required = true) String userName,
+            @RequestParam(value = "password", required = true) String password,
+            @RequestParam(value = "emailAddress", required = true) String emailAddress)
+            throws UserManagerException {
+
+        LOG.debug("Create Account for [" + userName + "], emailAddress[" + emailAddress + "]");
+
+        return userManager.createAccount(userName, password, emailAddress);
     }
 
     @RequestMapping(value = "/delete",

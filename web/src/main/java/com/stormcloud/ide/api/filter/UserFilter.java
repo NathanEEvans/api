@@ -58,15 +58,7 @@ public class UserFilter implements Filter {
 
             MDC.put("api", httpRequest.getRequestURI());
 
-            if (httpRequest.getRequestURI().endsWith("/api/createAccount")) {
-
-
-                // intercept and do something with create account
-                return;
-
-
-
-            } else if (httpRequest.getRequestURI().endsWith("/api/login")) {
+            if (httpRequest.getRequestURI().endsWith("/api/login")) {
 
 
                 // configure MDC for the remainging trip
@@ -142,6 +134,15 @@ public class UserFilter implements Filter {
                         LOG.error(ioe);
                     }
                 }
+
+
+
+            } else if (httpRequest.getRequestURI().endsWith("/api/user/createAccount")) {
+
+
+                // intercept and do something with create account
+                LOG.debug("Create Account Request.");
+
 
 
             } else {
