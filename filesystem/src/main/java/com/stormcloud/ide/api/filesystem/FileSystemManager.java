@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.apache.maven.pom._4_0.Model;
 import org.eclipse.jgit.util.Base64;
@@ -62,7 +63,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             filesystem.getChildren().add(item);
 
-            walk(item, file, Filters.getProjectFilter(), false);
+            walk(item, file, Filters.getProjectFilter(), false, null);
         }
 
         return filesystem;
@@ -85,7 +86,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             filesystem.getChildren().add(item);
 
-            walk(item, file, Filters.getProjectFilter(), false);
+            walk(item, file, Filters.getProjectFilter(), false, null);
         }
 
         return filesystem;
@@ -248,6 +249,10 @@ public class FileSystemManager implements IFilesystemManager {
 
                             Item project = processModule(file, true);
 
+                            if (gitManager.isModified(file.getAbsolutePath())) {
+                                project.setStatus("modified");
+                            }
+
                             // a parent pom, nested modules
 
                             // get the defined modules
@@ -265,27 +270,40 @@ public class FileSystemManager implements IFilesystemManager {
                                     Item projectModule =
                                             processModule(moduleDir, false);
 
+                                    String status = gitManager.getStatus(moduleDir, RemoteUser.get().getSetting(UserSettings.USER_HOME));
+                                    projectModule.setStatus(status);
+
                                     project.getChildren().add(projectModule);
                                 }
                             }
 
                             // done with the modules add the root pom
                             // so it ends up last
+
+                            Item projectFiles = new Item();
+                            projectFiles.setId("");
+                            projectFiles.setLabel("Project Files");
+                            projectFiles.setType("projectFiles");
+                            projectFiles.setDirectory(true);
+
+
                             Item pomFile = new Item();
                             pomFile.setId(file.getAbsolutePath() + POM_FILE);
-                            pomFile.setType("projectSettings");
-                            pomFile.setLabel("Project Settings");
+                            pomFile.setType("xml");
+                            pomFile.setLabel("pom.xml");
                             String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
                             pomFile.setStatus(status);
-
-                            project.getChildren().add(pomFile);
+                            projectFiles.setStatus(status);
+                            projectFiles.getChildren().add(pomFile);
 
                             Item settings = new Item();
                             settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
-                            settings.setLabel("Maven Settings");
-                            settings.setType("mavenSettings");
+                            settings.setLabel("settings.xml");
+                            settings.setType("xml");
 
-                            project.getChildren().add(settings);
+                            projectFiles.getChildren().add(settings);
+
+                            project.getChildren().add(projectFiles);
 
                             filesystem.getChildren().add(project);
 
@@ -294,14 +312,6 @@ public class FileSystemManager implements IFilesystemManager {
                             // single project, no nested modules
                             Item project =
                                     processModule(file, false);
-
-
-                            Item settings = new Item();
-                            settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
-                            settings.setLabel("Maven Settings");
-                            settings.setType("mavenSettings");
-
-                            project.getChildren().add(settings);
 
                             filesystem.getChildren().add(project);
                         }
@@ -422,7 +432,6 @@ public class FileSystemManager implements IFilesystemManager {
         // create new project object
         Item project = new Item();
         project.setId(dir.getAbsolutePath());
-        project.setType("project");
         project.setDirectory(true);
 
         if (!new File(dir.getAbsolutePath() + POM_FILE).exists()) {
@@ -450,6 +459,18 @@ public class FileSystemManager implements IFilesystemManager {
             project.setLabel(pom.getName());
         }
 
+
+        // set the project type based on the packaging
+
+        if (pom.getPackaging() != null && !pom.getPackaging().isEmpty()) {
+
+            project.setType(pom.getPackaging() + "Project");
+
+        } else {
+
+            project.setType("jarProject");
+        }
+
         String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
 
         // if there is a webapp dir, process it
@@ -465,7 +486,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             project.getChildren().add(webapp);
 
-            walk(webapp, new File(dir.getAbsolutePath() + WEB_DIR), Filters.getProjectFilter(), true);
+            walk(webapp, new File(dir.getAbsolutePath() + WEB_DIR), Filters.getProjectFilter(), true, null);
         }
 
         // if there is a source dir process it
@@ -482,24 +503,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             project.getChildren().add(sources);
 
-            walk(sources, new File(dir.getAbsolutePath() + SOURCE_DIR), Filters.getProjectFilter(), true);
-        }
-
-        // if there is a resources dir process it
-        if (new File(dir.getAbsolutePath() + RESOURCE_DIR).exists()) {
-
-            Item resources = new Item();
-            resources.setId(dir.getAbsolutePath() + RESOURCE_DIR);
-            resources.setLabel("Resources");
-            resources.setType("resources");
-            resources.setDirectory(true);
-
-            String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, userHome);
-            resources.setStatus(status);
-
-            project.getChildren().add(resources);
-
-            walk(resources, new File(dir.getAbsolutePath() + RESOURCE_DIR), Filters.getProjectFilter(), true);
+            walk(sources, new File(dir.getAbsolutePath() + SOURCE_DIR), Filters.getProjectFilter(), true, "package");
         }
 
         // if there is a test source dir, process it
@@ -507,7 +511,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             Item sources = new Item();
             sources.setId(dir.getAbsolutePath() + TEST_SOURCE_DIR);
-            sources.setLabel("Test Source Packages");
+            sources.setLabel("Test Packages");
             sources.setType("sources");
             sources.setDirectory(true);
 
@@ -516,7 +520,24 @@ public class FileSystemManager implements IFilesystemManager {
 
             project.getChildren().add(sources);
 
-            walk(sources, new File(dir.getAbsolutePath() + TEST_SOURCE_DIR), Filters.getProjectFilter(), true);
+            walk(sources, new File(dir.getAbsolutePath() + TEST_SOURCE_DIR), Filters.getProjectFilter(), true, "package");
+        }
+
+        // if there is a resources dir process it
+        if (new File(dir.getAbsolutePath() + RESOURCE_DIR).exists()) {
+
+            Item resources = new Item();
+            resources.setId(dir.getAbsolutePath() + RESOURCE_DIR);
+            resources.setLabel("Other Sources");
+            resources.setType("resources");
+            resources.setDirectory(true);
+
+            String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, userHome);
+            resources.setStatus(status);
+
+            project.getChildren().add(resources);
+
+            walk(resources, new File(dir.getAbsolutePath() + RESOURCE_DIR), Filters.getProjectFilter(), true, null);
         }
 
         // if there is test resources dir dir, process it
@@ -524,7 +545,7 @@ public class FileSystemManager implements IFilesystemManager {
 
             Item resources = new Item();
             resources.setId(dir.getAbsolutePath() + TEST_RESOURCE_DIR);
-            resources.setLabel("Test Resources");
+            resources.setLabel("Other Test Sources");
             resources.setType("resources");
             resources.setDirectory(true);
 
@@ -533,21 +554,42 @@ public class FileSystemManager implements IFilesystemManager {
 
             project.getChildren().add(resources);
 
-            walk(resources, new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter(), true);
+            walk(resources, new File(dir.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter(), true, null);
         }
 
-        // add the pom, at the bottom
+
+        // Dependencies
+        // Test Dependencies
+        // Java Dependencies
+
+
+        // add the project files at the bottom
         if (!root) {
+
+            Item projectFiles = new Item();
+            projectFiles.setId("");
+            projectFiles.setLabel("Project Files");
+            projectFiles.setType("projectFiles");
+            projectFiles.setDirectory(true);
+
             Item pomFile = new Item();
             pomFile.setId(dir.getAbsolutePath() + POM_FILE);
-            pomFile.setType("projectSettings");
-            pomFile.setLabel("Project Settings");
+            pomFile.setType("xml");
+            pomFile.setLabel("pom.xml");
 
             String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
-
             pomFile.setStatus(status);
+            projectFiles.setStatus(status);
+            projectFiles.getChildren().add(pomFile);
 
-            project.getChildren().add(pomFile);
+            Item settings = new Item();
+            settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
+            settings.setLabel("settings.xml");
+            settings.setType("xml");
+
+            projectFiles.getChildren().add(settings);
+
+            project.getChildren().add(projectFiles);
         }
 
         return project;
@@ -557,7 +599,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item current,
             File dir,
             FilenameFilter filter,
-            boolean versioning)
+            boolean versioning,
+            String type)
             throws FilesystemManagerException {
 
         /**
@@ -613,7 +656,11 @@ public class FileSystemManager implements IFilesystemManager {
 
                 if (file.isDirectory()) {
 
-                    walk(item, file, filter, versioning);
+                    if (type != null) {
+                        item.setType(type);
+                    }
+
+                    walk(item, file, filter, versioning, type);
                 }
 
                 if (current != null) {
@@ -1098,88 +1145,13 @@ public class FileSystemManager implements IFilesystemManager {
 
     private String getFileType(File file) {
 
-
         if (file.isDirectory()) {
 
             return "folder";
 
-        } else if (file.getName().endsWith(".java")) {
-
-            return "javaFile";
-
-        } else if (file.getName().endsWith(".jsp")) {
-
-            return "jspFile";
-
-        } else if (file.getName().endsWith(".xml")) {
-
-            return "xmlFile";
-
-        } else if (file.getName().endsWith(".wsdl")) {
-
-            return "wsdlFile";
-
-        } else if (file.getName().endsWith(".xsd")) {
-
-            return "xsdFile";
-
-        } else if (file.getName().endsWith(".html")) {
-
-            return "htmlFile";
-
-        } else if (file.getName().endsWith(".xhtml")) {
-
-            return "xhtmlFile";
-
-        } else if (file.getName().endsWith(".txt")) {
-
-            return "textFile";
-
-        } else if (file.getName().endsWith(".tld")) {
-
-            return "tldFile";
-
-        } else if (file.getName().endsWith(".png")
-                || file.getName().endsWith(".gif")
-                || file.getName().endsWith(".jpg")
-                || file.getName().endsWith(".jpeg")
-                || file.getName().endsWith(".tiff")
-                || file.getName().endsWith(".bmp")) {
-
-            return "imageFile";
-
-        } else if (file.getName().endsWith(".js")) {
-
-            return "jsFile";
-
-        } else if (file.getName().endsWith(".css")) {
-
-            return "cssFile";
-
-        } else if (file.getName().endsWith(".sql")) {
-
-            return "sqlFile";
-
-        } else if (file.getName().endsWith(".properties")) {
-
-            return "propertiesFile";
-
-        } else if (file.getName().endsWith(".MF")) {
-
-            return "manifestFile";
-
-        } else if (file.getName().endsWith(".yaml")) {
-
-            return "yamlFile";
-
-        } else if (file.getName().endsWith(".sh")) {
-
-            return "bashFile";
-
-
         } else {
 
-            return "textFile";
+            return FilenameUtils.getExtension(file.getName());
         }
     }
 

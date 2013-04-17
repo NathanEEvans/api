@@ -152,6 +152,58 @@ public class GitManager implements IGitManager {
     }
 
     @Override
+    public boolean isModified(String repository)
+            throws GitManagerException {
+
+        try {
+
+            Git git = Git.open(new File(repository));
+
+            IndexDiff diff =
+                    new IndexDiff(
+                    git.getRepository(),
+                    "HEAD",
+                    new FileTreeIterator(git.getRepository()));
+
+            diff.diff();
+
+            if (!diff.getAdded().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getChanged().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getMissing().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getModified().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getRemoved().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getUntracked().isEmpty()) {
+                return true;
+            }
+
+            if (!diff.getUntrackedFolders().isEmpty()) {
+                return true;
+            }
+
+        } catch (IOException e) {
+            LOG.error(e);
+            throw new GitManagerException(e);
+        }
+
+        return false;
+    }
+
+    @Override
     public void log(String repo) throws GitManagerException {
 
         try {
@@ -294,11 +346,22 @@ public class GitManager implements IGitManager {
     public String getStatus(String file, String userHome) throws GitManagerException {
 
         String tmpRelativePath = new File(file).getAbsolutePath().replaceFirst(userHome + "/projects", "").replaceFirst("/", "");
-        String project = tmpRelativePath.substring(0, tmpRelativePath.indexOf("/"));
+
+        String project;
+
+        if (tmpRelativePath.contains("/")) {
+
+            project = tmpRelativePath.substring(0, tmpRelativePath.indexOf('/'));
+
+        } else {
+
+            project = tmpRelativePath;
+        }
+
         String repository = userHome + "/projects/" + project;
         String relativePath = tmpRelativePath.replaceFirst(project, "").replaceFirst("/", "");
 
-        String status = null;
+        String status = "unmodified";
 
         try {
 
@@ -311,44 +374,45 @@ public class GitManager implements IGitManager {
 
             diff.diff();
 
-            if (!diff.getAdded().isEmpty()) {
-                status = "added";
-            }
-
-            if (!diff.getAssumeUnchanged().isEmpty()) {
-                status = "assumeUnchanged";
-            }
-
-            if (!diff.getChanged().isEmpty()) {
-                status = "changed";
-            }
-
-            if (!diff.getConflicting().isEmpty()) {
-                status = "conflict";
-            }
-
-            if (!diff.getIgnoredNotInIndex().isEmpty()) {
-                status = "ignoredNotInIndex";
-            }
-
-            if (!diff.getMissing().isEmpty()) {
-                status = "missing";
-            }
 
             if (!diff.getModified().isEmpty()) {
-                status = "modified";
-            }
-
-            if (!diff.getRemoved().isEmpty()) {
-                status = "removed";
+                return "modified";
             }
 
             if (!diff.getUntracked().isEmpty()) {
-                status = "untracked";
+                return "untracked";
+            }
+
+            if (!diff.getAdded().isEmpty()) {
+                return "added";
+            }
+
+            if (!diff.getAssumeUnchanged().isEmpty()) {
+                return "assumeUnchanged";
+            }
+
+            if (!diff.getChanged().isEmpty()) {
+                return "changed";
+            }
+
+            if (!diff.getConflicting().isEmpty()) {
+                return "conflict";
+            }
+
+            if (!diff.getIgnoredNotInIndex().isEmpty()) {
+                return "ignoredNotInIndex";
+            }
+
+            if (!diff.getMissing().isEmpty()) {
+                return "missing";
+            }
+
+            if (!diff.getRemoved().isEmpty()) {
+                return "removed";
             }
 
             if (!diff.getUntrackedFolders().isEmpty()) {
-                status = "untracked";
+                return "untracked";
             }
 
             return status;
