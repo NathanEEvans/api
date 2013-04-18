@@ -13,7 +13,8 @@ public class Item {
 
     private String id;
     private String label;
-    private String type;
+    private ItemType type;
+    private String style;
     private String status;
     private boolean directory;
     private Set<Item> children = new LinkedHashSet<Item>(0);
@@ -34,12 +35,20 @@ public class Item {
         this.label = label;
     }
 
-    public String getType() {
+    public ItemType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ItemType type) {
         this.type = type;
+    }
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
     }
 
     public String getStatus() {

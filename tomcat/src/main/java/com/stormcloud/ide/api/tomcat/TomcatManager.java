@@ -20,6 +20,7 @@ import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.api.tomcat.thread.StreamGobbler;
 import com.stormcloud.ide.model.filesystem.Item;
+import com.stormcloud.ide.model.filesystem.ItemType;
 import com.stormcloud.ide.model.user.UserSettings;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -99,14 +100,16 @@ public class TomcatManager implements ITomcatManager {
 
         Item tomcat = new Item();
         tomcat.setLabel("Tomcat");
-        tomcat.setType("tomcat");
+        tomcat.setType(ItemType.NONE);
+        tomcat.setStyle("tomcat");
 
         String tomcatHome = RemoteUser.get().getSetting(UserSettings.TOMCAT_HOME);
 
         Item webapps = new Item();
         webapps.setId(tomcatHome + "/webapps");
         webapps.setLabel("Web Applications");
-        webapps.setType("tomcatWebApps");
+        webapps.setType(ItemType.NONE);
+        webapps.setStyle("tomcatWebApps");
 
         tomcat.getChildren().add(webapps);
 
@@ -131,7 +134,8 @@ public class TomcatManager implements ITomcatManager {
             Item app = new Item();
             app.setId(file.getAbsolutePath());
             app.setLabel(file.getName());
-            app.setType("tomcatApp");
+            app.setType(ItemType.NONE);
+            app.setStyle("tomcatApp");
 
             webapps.getChildren().add(app);
 
@@ -142,7 +146,8 @@ public class TomcatManager implements ITomcatManager {
         Item lib = new Item();
         lib.setId(tomcatHome + "/lib");
         lib.setLabel("lib");
-        lib.setType("tomcatLib");
+        lib.setType(ItemType.NONE);
+        lib.setStyle("tomcatLib");
 
         tomcat.getChildren().add(lib);
 
@@ -193,52 +198,62 @@ public class TomcatManager implements ITomcatManager {
 
                 if (file.getName().endsWith(".java")) {
 
-                    item.setType("javaFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("java");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".jar")) {
 
-                    item.setType("jarFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("jar");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".jsp")) {
 
-                    item.setType("jspFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("jsp");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".xml")) {
 
-                    item.setType("xmlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("xml");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".wsdl")) {
 
-                    item.setType("wsdlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("wsdl");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".xsd")) {
 
-                    item.setType("xsdFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("xsd");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".html")) {
 
-                    item.setType("htmlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("html");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".xhtml")) {
 
-                    item.setType("xhtmlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("xhtml");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".txt")) {
 
-                    item.setType("textFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("txt");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".tld")) {
 
-                    item.setType("tldFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("tld");
                     item.setLabel(file.getName());
 
 
@@ -249,33 +264,39 @@ public class TomcatManager implements ITomcatManager {
                         || file.getName().endsWith(".tiff")
                         || file.getName().endsWith(".bmp")) {
 
-                    item.setType("imageFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("png");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".js")) {
 
-                    item.setType("jsFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("js");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".css")) {
 
-                    item.setType("cssFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("css");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".sql")) {
 
-                    item.setType("sqlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("sql");
                     item.setLabel(file.getName());
 
 
                 } else if (file.getName().endsWith(".properties")) {
 
-                    item.setType("propertiesFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("properties");
                     item.setLabel(file.getName());
 
                 } else {
 
-                    item.setType("folder");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("folder");
                     item.setLabel(file.getName());
 
                 }

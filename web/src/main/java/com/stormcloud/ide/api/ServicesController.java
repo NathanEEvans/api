@@ -19,6 +19,7 @@ import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.tomcat.ITomcatManager;
 import com.stormcloud.ide.api.tomcat.exception.TomcatManagerException;
 import com.stormcloud.ide.model.filesystem.Item;
+import com.stormcloud.ide.model.filesystem.ItemType;
 import com.stormcloud.ide.model.services.Services;
 import com.stormcloud.ide.model.user.UserSettings;
 import java.io.File;
@@ -58,46 +59,44 @@ public class ServicesController extends BaseController {
         // create databases
         Item databases = new Item();
         databases.setLabel("Databases");
-        databases.setType("rdbms");
+        databases.setType(ItemType.NONE);
+        databases.setStyle("rdbms");
 
         /**
          * @todo change this into rdbmsManager who will fetch database info like
          * tomcatManager does
          */
-        Item javaDb = new Item();
-        javaDb.setLabel("Java DB");
-        javaDb.setType("javadb");
-        databases.getChildren().add(javaDb);
-
-        Item mysql = new Item();
-        mysql.setLabel("MySQL");
-        mysql.setType("mysql");
-        databases.getChildren().add(mysql);
-
-        Item oracle = new Item();
-        oracle.setLabel("Oracle");
-        oracle.setType("oracle");
-        databases.getChildren().add(oracle);
-
+        //Item javaDb = new Item();
+        //javaDb.setLabel("Java DB");
+        //javaDb.setType("javadb");
+        //databases.getChildren().add(javaDb);
+        //Item mysql = new Item();
+        //mysql.setLabel("MySQL");
+        //mysql.setType("mysql");
+        //databases.getChildren().add(mysql);
+        //Item oracle = new Item();
+        //oracle.setLabel("Oracle");
+        //oracle.setType("oracle");
+        //databases.getChildren().add(oracle);
         // add databases to services
         services.getChildren().add(databases);
 
 
         // Web Services
-        Item webservices = new Item();
-        webservices.setLabel("Web Services");
-        webservices.setType("webServices");
+        //Item webservices = new Item();
+        //webservices.setLabel("Web Services");
+        //webservices.setType("webServices");
 
         /**
          * @todo add some example webservices
          */
         // add webservices to services
-        services.getChildren().add(webservices);
-
+        //services.getChildren().add(webservices);
         // create servers group
         Item servers = new Item();
         servers.setLabel("Servers");
-        servers.setType("servers");
+        servers.setType(ItemType.NONE);
+        servers.setStyle("servers");
 
         /**
          * @todo add glassfish, jboss, weblogic
@@ -110,12 +109,14 @@ public class ServicesController extends BaseController {
         // Maven Repositories
         Item mavenRepos = new Item();
         mavenRepos.setLabel("Maven Repositories");
-        mavenRepos.setType("mavenRepositories");
+        mavenRepos.setType(ItemType.NONE);
+        mavenRepos.setStyle("mavenRepositories");
 
         // add local repo
         Item local = new Item();
         local.setLabel("Local");
-        local.setType("localMavenRepository");
+        local.setType(ItemType.NONE);
+        local.setStyle("localMavenRepository");
 
         File m2 = new File(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY));
 
@@ -144,20 +145,20 @@ public class ServicesController extends BaseController {
         services.getChildren().add(mavenRepos);
 
         // Continuous Integration
-        Item ci = new Item();
-        ci.setLabel("Continuous Integration");
-        ci.setType("continuousIntegration");
+        //Item ci = new Item();
+        //ci.setLabel("Continuous Integration");
+        //ci.setType("continuousIntegration");
 
         // add ci to services
-        services.getChildren().add(ci);
+        //services.getChildren().add(ci);
 
         // Issue Trackers
-        Item issueTrackers = new Item();
-        issueTrackers.setLabel("Issue Trackers");
-        issueTrackers.setType("issueTrackers");
+        //Item issueTrackers = new Item();
+        //issueTrackers.setLabel("Issue Trackers");
+        //issueTrackers.setType("issueTrackers");
 
         // add issue trackers to services
-        services.getChildren().add(issueTrackers);
+        //services.getChildren().add(issueTrackers);
 
         response[0] = services;
 
@@ -204,101 +205,35 @@ public class ServicesController extends BaseController {
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
 
-                if (file.getName().endsWith(".java")) {
 
-                    item.setType("javaFile");
-                    item.setLabel(file.getName());
+                if (file.getName().endsWith(".jar")) {
 
-                } else if (file.getName().endsWith(".jar")) {
-
-                    item.setType("jarFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("jar");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".pom")) {
 
-                    item.setType("xmlFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("xml");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".sha1")) {
 
-                    item.setType("sha1File");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".jsp")) {
-
-                    item.setType("jspFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("sha1");
                     item.setLabel(file.getName());
 
                 } else if (file.getName().endsWith(".xml")) {
 
-                    item.setType("xmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".wsdl")) {
-
-                    item.setType("wsdlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".xsd")) {
-
-                    item.setType("xsdFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".html")) {
-
-                    item.setType("htmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".xhtml")) {
-
-                    item.setType("xhtmlFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".txt")) {
-
-                    item.setType("textFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".tld")) {
-
-                    item.setType("tldFile");
-                    item.setLabel(file.getName());
-
-
-                } else if (file.getName().endsWith(".png")
-                        || file.getName().endsWith(".gif")
-                        || file.getName().endsWith(".jpg")
-                        || file.getName().endsWith(".jpeg")
-                        || file.getName().endsWith(".tiff")
-                        || file.getName().endsWith(".bmp")) {
-
-                    item.setType("imageFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".js")) {
-
-                    item.setType("jsFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".css")) {
-
-                    item.setType("cssFile");
-                    item.setLabel(file.getName());
-
-                } else if (file.getName().endsWith(".sql")) {
-
-                    item.setType("sqlFile");
-                    item.setLabel(file.getName());
-
-
-                } else if (file.getName().endsWith(".properties")) {
-
-                    item.setType("propertiesFile");
+                    item.setType(ItemType.FILE);
+                    item.setStyle("xml");
                     item.setLabel(file.getName());
 
                 } else {
 
-                    item.setType("folder");
+                    item.setType(ItemType.FOLDER);
+                    item.setStyle("folder");
                     item.setLabel(file.getName());
 
                 }

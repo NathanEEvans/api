@@ -9,11 +9,7 @@ import com.stormcloud.ide.api.git.IGitManager;
 import com.stormcloud.ide.api.git.exception.GitManagerException;
 import com.stormcloud.ide.model.factory.MavenModelFactory;
 import com.stormcloud.ide.model.factory.exception.MavenModelFactoryException;
-import com.stormcloud.ide.model.filesystem.Filesystem;
-import com.stormcloud.ide.model.filesystem.Find;
-import com.stormcloud.ide.model.filesystem.FindResult;
-import com.stormcloud.ide.model.filesystem.Item;
-import com.stormcloud.ide.model.filesystem.Save;
+import com.stormcloud.ide.model.filesystem.*;
 import com.stormcloud.ide.model.project.ProjectType;
 import com.stormcloud.ide.model.user.UserSettings;
 import java.io.*;
@@ -59,7 +55,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId(file.getAbsolutePath());
             item.setLabel(file.getName());
-            item.setType("folder");
+            item.setType(ItemType.FOLDER);
+            item.setStyle("folder");
 
             filesystem.getChildren().add(item);
 
@@ -82,7 +79,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId(file.getAbsolutePath());
             item.setLabel(file.getName());
-            item.setType("folder");
+            item.setType(ItemType.FOLDER);
+            item.setStyle("folder");
 
             filesystem.getChildren().add(item);
 
@@ -108,7 +106,8 @@ public class FileSystemManager implements IFilesystemManager {
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
                 item.setLabel(file.getName());
-                item.setType("folder");
+                item.setType(ItemType.FOLDER);
+                item.setStyle("folder");
 
                 filesystem.getChildren().add(item);
 
@@ -135,7 +134,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId(file.getAbsolutePath());
             item.setLabel(file.getName());
-            item.setType("project");
+            item.setType(ItemType.OPENED_PROJECT);
+            item.setStyle("project");
 
             items.add(item);
         }
@@ -178,7 +178,7 @@ public class FileSystemManager implements IFilesystemManager {
                 // only add project folder
                 Item item = new Item();
                 item.setId(file.getAbsolutePath());
-                item.setType("closedProject");
+                item.setType(ItemType.CLOSED_PROJECT);
                 item.setDirectory(true);
 
                 if (new File(file.getAbsolutePath() + POM_FILE).exists()) {
@@ -195,6 +195,15 @@ public class FileSystemManager implements IFilesystemManager {
                         } else {
 
                             item.setLabel(pom.getName());
+                        }
+
+                        if (pom.getPackaging() != null && !pom.getPackaging().isEmpty()) {
+
+                            item.setStyle(pom.getPackaging());
+
+                        } else {
+
+                            item.setStyle("jar");
                         }
 
                     } catch (MavenModelFactoryException e) {
@@ -217,9 +226,10 @@ public class FileSystemManager implements IFilesystemManager {
 
                     // No pom.xml found where expected
                     // mark as malformed
-                    item.setId("none");
+                    item.setId("");
                     item.setLabel(file.getName() + " [Malformed Project!]");
-                    item.setType("malformedProject");
+                    item.setType(ItemType.MALFORMED_PROJECT);
+                    item.setStyle("brokenProject");
                 }
 
                 filesystem.getChildren().add(item);
@@ -249,33 +259,46 @@ public class FileSystemManager implements IFilesystemManager {
 
                             Item project = processModule(file, true);
 
+                            // a parent pom, nested modules
+                            Item modulesFolder = new Item();
+                            modulesFolder.setId("");
+                            modulesFolder.setDirectory(true);
+                            modulesFolder.setLabel("Modules");
+                            modulesFolder.setType(ItemType.FOLDER);
+                            modulesFolder.setStyle("modules");
+
                             if (gitManager.isModified(file.getAbsolutePath())) {
                                 project.setStatus("modified");
+                                modulesFolder.setStatus("modified");
                             }
 
-                            // a parent pom, nested modules
 
                             // get the defined modules
-                            List<String> modules = pom.getModules().getModule();
+                            if (pom.getModules() != null) {
 
-                            for (String module : modules) {
+                                List<String> modules = pom.getModules().getModule();
 
-                                // process each module
-                                File moduleDir =
-                                        new File(
-                                        file.getAbsolutePath() + "/" + module);
+                                for (String module : modules) {
 
-                                if (moduleDir.exists()) {
+                                    // process each module
+                                    File moduleDir =
+                                            new File(
+                                            file.getAbsolutePath() + "/" + module);
 
-                                    Item projectModule =
-                                            processModule(moduleDir, false);
+                                    if (moduleDir.exists()) {
 
-                                    String status = gitManager.getStatus(moduleDir, RemoteUser.get().getSetting(UserSettings.USER_HOME));
-                                    projectModule.setStatus(status);
+                                        Item projectModule =
+                                                processModule(moduleDir, false);
 
-                                    project.getChildren().add(projectModule);
+                                        String status = gitManager.getStatus(moduleDir, RemoteUser.get().getSetting(UserSettings.USER_HOME));
+                                        projectModule.setStatus(status);
+
+                                        modulesFolder.getChildren().add(projectModule);
+                                    }
                                 }
                             }
+
+                            project.getChildren().add(modulesFolder);
 
                             // done with the modules add the root pom
                             // so it ends up last
@@ -283,13 +306,15 @@ public class FileSystemManager implements IFilesystemManager {
                             Item projectFiles = new Item();
                             projectFiles.setId("");
                             projectFiles.setLabel("Project Files");
-                            projectFiles.setType("projectFiles");
+                            projectFiles.setType(ItemType.FOLDER);
+                            projectFiles.setStyle("projectFiles");
                             projectFiles.setDirectory(true);
 
 
                             Item pomFile = new Item();
                             pomFile.setId(file.getAbsolutePath() + POM_FILE);
-                            pomFile.setType("xml");
+                            pomFile.setType(ItemType.FILE);
+                            pomFile.setStyle("xml");
                             pomFile.setLabel("pom.xml");
                             String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
                             pomFile.setStatus(status);
@@ -299,7 +324,8 @@ public class FileSystemManager implements IFilesystemManager {
                             Item settings = new Item();
                             settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
                             settings.setLabel("settings.xml");
-                            settings.setType("xml");
+                            settings.setType(ItemType.FILE);
+                            settings.setStyle("xml");
 
                             projectFiles.getChildren().add(settings);
 
@@ -312,6 +338,10 @@ public class FileSystemManager implements IFilesystemManager {
                             // single project, no nested modules
                             Item project =
                                     processModule(file, false);
+
+                            if (gitManager.isModified(file.getAbsolutePath())) {
+                                project.setStatus("modified");
+                            }
 
                             filesystem.getChildren().add(project);
                         }
@@ -329,9 +359,10 @@ public class FileSystemManager implements IFilesystemManager {
                     // No pom.xml found where expected
                     // mark as malformed
                     Item item = new Item();
-                    item.setId("none");
-                    item.setLabel(file.getName() + "[Malformed Project!]");
-                    item.setType("malformedProject");
+                    item.setId("");
+                    item.setLabel(file.getName() + " [Malformed Project!]");
+                    item.setType(ItemType.MALFORMED_PROJECT);
+                    item.setStyle("brokenProject");
 
                     filesystem.getChildren().add(item);
 
@@ -346,7 +377,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId("none");
             item.setLabel("No Projects Available");
-            item.setType("noAvailableProjects");
+            item.setType(ItemType.NONE);
+            item.setStyle("noAvailableProjects");
 
             filesystem.getChildren().add(item);
         }
@@ -433,15 +465,17 @@ public class FileSystemManager implements IFilesystemManager {
         Item project = new Item();
         project.setId(dir.getAbsolutePath());
         project.setDirectory(true);
+        project.setType(ItemType.OPENED_PROJECT);
 
         if (!new File(dir.getAbsolutePath() + POM_FILE).exists()) {
 
             // No pom.xml found where expected
             // mark as malformed
             Item item = new Item();
-            item.setId("none");
-            item.setLabel(dir.getName() + "[Malformed Project!]");
-            item.setType("malformedProject");
+            item.setId("");
+            item.setLabel(dir.getName() + " [Malformed Project!]");
+            item.setType(ItemType.MALFORMED_PROJECT);
+            item.setStyle("brokenProject");
             return item;
         }
 
@@ -464,11 +498,11 @@ public class FileSystemManager implements IFilesystemManager {
 
         if (pom.getPackaging() != null && !pom.getPackaging().isEmpty()) {
 
-            project.setType(pom.getPackaging() + "Project");
+            project.setStyle(pom.getPackaging() + "Project");
 
         } else {
 
-            project.setType("jarProject");
+            project.setStyle("jarProject");
         }
 
         String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
@@ -479,7 +513,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item webapp = new Item();
             webapp.setId(dir.getAbsolutePath() + WEB_DIR);
             webapp.setLabel("Web Pages");
-            webapp.setType("webapp");
+            webapp.setType(ItemType.FOLDER);
+            webapp.setStyle("webapp");
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + WEB_DIR, userHome);
             webapp.setStatus(status);
@@ -495,7 +530,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item sources = new Item();
             sources.setId(dir.getAbsolutePath() + SOURCE_DIR);
             sources.setLabel("Source Packages");
-            sources.setType("sources");
+            sources.setType(ItemType.FOLDER);
+            sources.setStyle("sources");
             sources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + SOURCE_DIR, userHome);
@@ -512,7 +548,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item sources = new Item();
             sources.setId(dir.getAbsolutePath() + TEST_SOURCE_DIR);
             sources.setLabel("Test Packages");
-            sources.setType("sources");
+            sources.setType(ItemType.FOLDER);
+            sources.setStyle("sources");
             sources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_SOURCE_DIR, userHome);
@@ -529,7 +566,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item resources = new Item();
             resources.setId(dir.getAbsolutePath() + RESOURCE_DIR);
             resources.setLabel("Other Sources");
-            resources.setType("resources");
+            resources.setType(ItemType.FOLDER);
+            resources.setStyle("resources");
             resources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + RESOURCE_DIR, userHome);
@@ -546,7 +584,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item resources = new Item();
             resources.setId(dir.getAbsolutePath() + TEST_RESOURCE_DIR);
             resources.setLabel("Other Test Sources");
-            resources.setType("resources");
+            resources.setType(ItemType.FOLDER);
+            resources.setStyle("resources");
             resources.setDirectory(true);
 
             String status = gitManager.getStatus(dir.getAbsolutePath() + TEST_RESOURCE_DIR, userHome);
@@ -569,12 +608,14 @@ public class FileSystemManager implements IFilesystemManager {
             Item projectFiles = new Item();
             projectFiles.setId("");
             projectFiles.setLabel("Project Files");
-            projectFiles.setType("projectFiles");
+            projectFiles.setType(ItemType.FOLDER);
+            projectFiles.setStyle("projectFiles");
             projectFiles.setDirectory(true);
 
             Item pomFile = new Item();
             pomFile.setId(dir.getAbsolutePath() + POM_FILE);
-            pomFile.setType("xml");
+            pomFile.setType(ItemType.FILE);
+            pomFile.setStyle("xml");
             pomFile.setLabel("pom.xml");
 
             String status = gitManager.getStatus(pomFile.getId(), RemoteUser.get().getSetting(UserSettings.USER_HOME));
@@ -585,7 +626,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item settings = new Item();
             settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
             settings.setLabel("settings.xml");
-            settings.setType("xml");
+            settings.setType(ItemType.FILE);
+            settings.setStyle("xml");
 
             projectFiles.getChildren().add(settings);
 
@@ -600,7 +642,7 @@ public class FileSystemManager implements IFilesystemManager {
             File dir,
             FilenameFilter filter,
             boolean versioning,
-            String type)
+            String style)
             throws FilesystemManagerException {
 
         /**
@@ -652,15 +694,21 @@ public class FileSystemManager implements IFilesystemManager {
                 }
 
                 item.setLabel(file.getName());
-                item.setType(getFileType(file));
+                item.setStyle(getFileType(file));
 
                 if (file.isDirectory()) {
 
-                    if (type != null) {
-                        item.setType(type);
+                    item.setType(ItemType.FOLDER);
+
+                    if (style != null) {
+                        item.setStyle(style);
                     }
 
-                    walk(item, file, filter, versioning, type);
+                    walk(item, file, filter, versioning, style);
+
+                } else {
+
+                    item.setType(ItemType.FILE);
                 }
 
                 if (current != null) {
@@ -686,7 +734,8 @@ public class FileSystemManager implements IFilesystemManager {
                     // create new item
                     Item item = new Item();
                     item.setId(file.getAbsolutePath());
-                    item.setType("folder");
+                    item.setType(ItemType.FOLDER);
+                    item.setStyle("folder");
                     item.setLabel(file.getName());
 
 
@@ -807,7 +856,16 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId(file.getAbsolutePath());
             item.setLabel(file.getName());
-            item.setType(getFileType(file));
+            item.setStyle(getFileType(file));
+
+            if (file.isDirectory()) {
+
+                item.setType(ItemType.FOLDER);
+
+            } else {
+
+                item.setType(ItemType.FILE);
+            }
 
             filesystem.getChildren().add(item);
         }
@@ -817,7 +875,8 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId("none");
             item.setLabel("Your Trash is Empty!");
-            item.setType("noTrash");
+            item.setType(ItemType.NONE);
+            item.setStyle("noTrash");
 
             filesystem.getChildren().add(item);
         }
@@ -1094,7 +1153,8 @@ public class FileSystemManager implements IFilesystemManager {
                 item.setId(id);
                 // set filename as label
                 item.setLabel(fileName);
-                item.setType(getFileType(new File(fileName)));
+                item.setType(ItemType.FILE);
+                item.setStyle(getFileType(new File(fileName)));
 
                 if (fields.length > 1) {
 

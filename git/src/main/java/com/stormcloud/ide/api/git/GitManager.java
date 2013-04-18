@@ -56,6 +56,54 @@ public class GitManager implements IGitManager {
     private Logger LOG = Logger.getLogger(getClass());
     private IStormCloudDao dao;
 
+    public String status() {
+
+
+        return "0";
+    }
+
+    public String init() {
+
+
+        return "0";
+    }
+
+    public String add() {
+
+
+        return "0";
+    }
+
+    public String commit() {
+
+
+        return "0";
+    }
+
+    public String push() {
+
+
+        return "0";
+    }
+
+    public String pull() {
+
+
+        return "0";
+    }
+
+    public String createBranch() {
+
+
+        return "0";
+    }
+
+    public String switchBranch() {
+
+
+        return "0";
+    }
+
     @Override
     public String cloneRemoteRepository(String uri)
             throws GitManagerException {
@@ -375,44 +423,24 @@ public class GitManager implements IGitManager {
             diff.diff();
 
 
-            if (!diff.getModified().isEmpty()) {
+            if (!diff.getModified().isEmpty() || !diff.getChanged().isEmpty()) {
                 return "modified";
             }
 
-            if (!diff.getUntracked().isEmpty()) {
+
+            if (!diff.getMissing().isEmpty() || !diff.getRemoved().isEmpty()) {
+                return "missing";
+            }
+
+            if (!diff.getUntracked().isEmpty()
+                    || !diff.getUntrackedFolders().isEmpty()
+                    || !diff.getAdded().isEmpty()) {
+
                 return "untracked";
-            }
-
-            if (!diff.getAdded().isEmpty()) {
-                return "added";
-            }
-
-            if (!diff.getAssumeUnchanged().isEmpty()) {
-                return "assumeUnchanged";
-            }
-
-            if (!diff.getChanged().isEmpty()) {
-                return "changed";
             }
 
             if (!diff.getConflicting().isEmpty()) {
                 return "conflict";
-            }
-
-            if (!diff.getIgnoredNotInIndex().isEmpty()) {
-                return "ignoredNotInIndex";
-            }
-
-            if (!diff.getMissing().isEmpty()) {
-                return "missing";
-            }
-
-            if (!diff.getRemoved().isEmpty()) {
-                return "removed";
-            }
-
-            if (!diff.getUntrackedFolders().isEmpty()) {
-                return "untracked";
             }
 
             return status;
