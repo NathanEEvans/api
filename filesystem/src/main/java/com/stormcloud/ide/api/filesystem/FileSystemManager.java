@@ -1,7 +1,6 @@
 package com.stormcloud.ide.api.filesystem;
 
 import com.stormcloud.ide.api.core.dao.IStormCloudDao;
-import com.stormcloud.ide.api.core.entity.User;
 import com.stormcloud.ide.api.core.remote.RemoteUser;
 import com.stormcloud.ide.api.core.thread.StreamGobbler;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
@@ -118,29 +117,391 @@ public class FileSystemManager implements IFilesystemManager {
         return filesystem;
     }
 
+    /**
+     *
+     * @return @throws FilesystemManagerException
+     */
     @Override
-    public Item[] availableProjects()
+    public Set<Item> getProjects()
             throws FilesystemManagerException {
 
+        // create return set
+        Set<Item> items = new LinkedHashSet<Item>(0);
 
+        // add filesystem root
+        Item root = new Item();
+        root.setDirectory(true);
+        root.setId("root");
+        root.setLabel("root");
+        root.setParent(null);
+        root.setStatus("root");
+        root.setStyle("root");
+        root.setType(ItemType.NONE);
+
+        items.add(root);
+
+        // get project folders
         File[] files = new File(
-                RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER)).listFiles(
+                RemoteUser.get().getSetting(
+                UserSettings.PROJECT_FOLDER)).listFiles(
                 Filters.getProjectFilter());
 
-        List<Item> items = new ArrayList<Item>(0);
-
+        // loop trough the projects
         for (File file : files) {
 
+            // create and add project
+            Item project = new Item();
+            project.setDirectory(true);
+            project.setId(file.getAbsolutePath());
+            project.setParent("root");
+            project.setStatus("");
+            project.setType(ItemType.OPENED_PROJECT);
+
+            items.add(project);
+
+            // get some data from the pom for better presentation
+            if (new File(file.getAbsolutePath() + POM_FILE).exists()) {
+
+                try {
+
+                    // parse the pom
+                    Model pom = MavenModelFactory.getProjectModel(
+                            new File(file.getAbsolutePath() + POM_FILE));
+
+                    // get the packaging type
+                    String packaging = pom.getPackaging();
+
+                    // set the packagin type if available
+                    // jar is the default when not available
+                    if (packaging != null && !packaging.isEmpty()) {
+
+                        project.setStyle(packaging + "Project");
+
+                    } else {
+
+                        project.setStyle("jarProject");
+                    }
+
+                    // add the project name from the pom if it exists
+                    // otherwise use the folder name.
+                    if (pom.getName() == null || pom.getName().isEmpty()) {
+
+                        project.setLabel(file.getName());
+
+                    } else {
+
+                        project.setLabel(pom.getName());
+                    }
+
+
+                    // if it's a pom we have possible modules
+                    if (packaging.equals("pom")) {
+
+                        // create a folder as modules placeholder
+                        Item modulesFolder = new Item();
+                        modulesFolder.setId(project.getId() + "/modules");
+                        modulesFolder.setParent(project.getId());
+                        modulesFolder.setDirectory(true);
+                        modulesFolder.setLabel("Modules");
+                        modulesFolder.setType(ItemType.FOLDER);
+                        modulesFolder.setStyle("modules");
+
+                        items.add(modulesFolder);
+
+                        // loop trough the modules
+                        if (pom.getModules() != null) {
+
+                            List<String> modules = pom.getModules().getModule();
+
+                            for (String moduleName : modules) {
+
+                                // process each module
+                                File moduleDir =
+                                        new File(
+                                        file.getAbsolutePath() + "/" + moduleName);
+
+                                if (moduleDir.exists()) {
+
+                                    // add the module
+                                    Item module = new Item();
+                                    module.setId(moduleDir.getAbsolutePath());
+                                    module.setParent(modulesFolder.getId());
+                                    module.setType(ItemType.FOLDER);
+
+                                    // parse the pom
+                                    Model modulePom = MavenModelFactory.getProjectModel(
+                                            new File(moduleDir.getAbsolutePath() + POM_FILE));
+
+                                    // get the packaging type
+                                    String modulePackaging = modulePom.getPackaging();
+
+                                    // set the packagin type if available
+                                    // jar is the default when not available
+                                    if (modulePackaging != null && !modulePackaging.isEmpty()) {
+
+                                        module.setStyle(modulePackaging + "Project");
+
+                                    } else {
+
+                                        module.setStyle("jarProject");
+                                    }
+
+                                    // add the project name from the pom if it exists
+                                    // otherwise use the folder name.
+                                    if (modulePom.getName() == null || modulePom.getName().isEmpty()) {
+
+                                        module.setLabel(moduleDir.getName());
+
+                                    } else {
+
+                                        module.setLabel(modulePom.getName());
+                                    }
+
+                                    items.add(module);
+
+                                    processProject(items, moduleDir);
+                                }
+                            }
+                        }
+
+                        // add the project files
+                        Item projectFiles = new Item();
+                        projectFiles.setId(project.getId() + "/projectFiles");
+                        projectFiles.setParent(project.getId());
+                        projectFiles.setLabel("Project Files");
+                        projectFiles.setType(ItemType.FOLDER);
+                        projectFiles.setStyle("projectFiles");
+                        projectFiles.setDirectory(true);
+
+                        items.add(projectFiles);
+
+                        Item pomFile = new Item();
+                        pomFile.setId(project.getId() + POM_FILE);
+                        pomFile.setParent(projectFiles.getId());
+                        pomFile.setType(ItemType.FILE);
+                        pomFile.setStyle("xml");
+                        pomFile.setLabel("pom.xml");
+                        pomFile.setDirectory(false);
+
+                        items.add(pomFile);
+
+                        Item settings = new Item();
+                        settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
+                        settings.setParent(projectFiles.getId());
+                        settings.setLabel("settings.xml");
+                        settings.setType(ItemType.FILE);
+                        settings.setStyle("xml");
+                        settings.setDirectory(false);
+
+                        items.add(settings);
+
+                    } else {
+
+                        // otherwise it's a single project
+                        processProject(items, file);
+                    }
+
+
+                } catch (MavenModelFactoryException e) {
+                    LOG.error(e);
+                    throw new FilesystemManagerException(e);
+                }
+            }
+        }
+
+        // no projects available
+        if (files.length == 0) {
+
             Item item = new Item();
-            item.setId(file.getAbsolutePath());
-            item.setLabel(file.getName());
-            item.setType(ItemType.OPENED_PROJECT);
-            item.setStyle("project");
+            item.setId(null);
+            item.setParent(root.getId());
+            item.setLabel("No Projects Available");
+            item.setType(ItemType.NONE);
+            item.setStyle("noAvailableProjects");
 
             items.add(item);
         }
 
-        return items.toArray(new Item[items.size()]);
+        return items;
+    }
+
+    private void processProject(
+            Set<Item> root,
+            File project)
+            throws FilesystemManagerException {
+
+        if (new File(project.getAbsolutePath() + WEB_DIR).exists()) {
+
+            Item webapp = new Item();
+            webapp.setId(project.getAbsolutePath() + WEB_DIR);
+            webapp.setParent(project.getAbsolutePath());
+            webapp.setLabel("Web Pages");
+            webapp.setType(ItemType.FOLDER);
+            webapp.setStyle("webapp");
+
+            root.add(webapp);
+
+            walk(root, new File(project.getAbsolutePath() + WEB_DIR), Filters.getProjectFilter());
+        }
+
+        // if there is a source dir process it
+        if (new File(project.getAbsolutePath() + SOURCE_DIR).exists()) {
+
+            Item sources = new Item();
+            sources.setId(project.getAbsolutePath() + SOURCE_DIR);
+            sources.setParent(project.getAbsolutePath());
+            sources.setLabel("Source Packages");
+            sources.setType(ItemType.FOLDER);
+            sources.setStyle("sources");
+            sources.setDirectory(true);
+
+            root.add(sources);
+
+            walk(root, new File(project.getAbsolutePath() + SOURCE_DIR), Filters.getProjectFilter());
+        }
+
+        // if there is a test source dir, process it
+        if (new File(project.getAbsolutePath() + TEST_SOURCE_DIR).exists()) {
+
+            Item sources = new Item();
+            sources.setId(project.getAbsolutePath() + TEST_SOURCE_DIR);
+            sources.setParent(project.getAbsolutePath());
+            sources.setLabel("Test Packages");
+            sources.setType(ItemType.FOLDER);
+            sources.setStyle("sources");
+            sources.setDirectory(true);
+
+            root.add(sources);
+
+            walk(root, new File(project.getAbsolutePath() + TEST_SOURCE_DIR), Filters.getProjectFilter());
+        }
+
+        // if there is a resources dir process it
+        if (new File(project.getAbsolutePath() + RESOURCE_DIR).exists()) {
+
+            Item resources = new Item();
+            resources.setId(project.getAbsolutePath() + RESOURCE_DIR);
+            resources.setParent(project.getAbsolutePath());
+            resources.setLabel("Other Sources");
+            resources.setType(ItemType.FOLDER);
+            resources.setStyle("resources");
+            resources.setDirectory(true);
+
+            root.add(resources);
+
+            walk(root, new File(project.getAbsolutePath() + RESOURCE_DIR), Filters.getProjectFilter());
+        }
+
+        // if there is test resources dir dir, process it
+        if (new File(project.getAbsolutePath() + TEST_RESOURCE_DIR).exists()) {
+
+            Item resources = new Item();
+            resources.setId(project.getAbsolutePath() + TEST_RESOURCE_DIR);
+            resources.setParent(project.getAbsolutePath());
+            resources.setLabel("Other Test Sources");
+            resources.setType(ItemType.FOLDER);
+            resources.setStyle("resources");
+            resources.setDirectory(true);
+
+            root.add(resources);
+
+            walk(root, new File(project.getAbsolutePath() + TEST_RESOURCE_DIR), Filters.getProjectFilter());
+        }
+
+        // add the project files
+        Item projectFiles = new Item();
+        projectFiles.setId(project.getAbsolutePath() + "/projectFiles");
+        projectFiles.setParent(project.getAbsolutePath());
+        projectFiles.setLabel("Project Files");
+        projectFiles.setType(ItemType.FOLDER);
+        projectFiles.setStyle("projectFiles");
+        projectFiles.setDirectory(true);
+
+        root.add(projectFiles);
+
+        Item pomFile = new Item();
+        pomFile.setId(project.getAbsolutePath() + POM_FILE);
+        pomFile.setParent(projectFiles.getId());
+        pomFile.setType(ItemType.FILE);
+        pomFile.setStyle("xml");
+        pomFile.setLabel("pom.xml");
+        pomFile.setDirectory(false);
+
+        root.add(pomFile);
+
+        Item settings = new Item();
+        settings.setId(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY) + SETTINGS_XML);
+        settings.setParent(projectFiles.getId());
+        settings.setLabel("settings.xml");
+        settings.setType(ItemType.FILE);
+        settings.setStyle("xml");
+        settings.setDirectory(false);
+
+        root.add(settings);
+    }
+
+    private void walk(
+            Set<Item> root,
+            File dir,
+            FilenameFilter filter)
+            throws FilesystemManagerException {
+
+        /**
+         * @todo read pom for item label etc.
+         *
+         */
+        File[] files = dir.listFiles(filter);
+
+        if (files != null) {
+
+            Comparator comp = new Comparator() {
+
+                @Override
+                public int compare(Object o1, Object o2) {
+                    File f1 = (File) o1;
+                    File f2 = (File) o2;
+                    if (f1.isDirectory() && !f2.isDirectory()) {
+                        // Directory before non-directory
+                        return -1;
+                    } else if (!f1.isDirectory() && f2.isDirectory()) {
+                        // Non-directory after directory
+                        return 1;
+                    } else {
+                        // Alphabetic order otherwise
+                        return f1.compareTo(f2);
+                    }
+                }
+            };
+
+            Arrays.sort(files, comp);
+
+            for (File file : files) {
+
+                // create new item
+                Item item = new Item();
+                item.setId(file.getAbsolutePath());
+                item.setParent(file.getParent());
+                item.setDirectory(file.isDirectory());
+                item.setLabel(file.getName());
+                item.setStyle(getStyle(file));
+
+                if (file.isDirectory()) {
+
+                    item.setType(ItemType.FOLDER);
+
+                } else {
+
+                    item.setType(ItemType.FILE);
+                }
+
+                root.add(item);
+
+                if (file.isDirectory()) {
+
+                    walk(root, file, filter);
+                }
+            }
+        }
     }
 
     /**
@@ -694,7 +1055,7 @@ public class FileSystemManager implements IFilesystemManager {
                 }
 
                 item.setLabel(file.getName());
-                item.setStyle(getFileType(file));
+                item.setStyle(getStyle(file));
 
                 if (file.isDirectory()) {
 
@@ -801,34 +1162,53 @@ public class FileSystemManager implements IFilesystemManager {
 
         File file = new File(filePath);
 
-        User user = RemoteUser.get();
-
         try {
 
             if (file.isDirectory()) {
 
                 try {
 
-                    FileUtils.moveDirectory(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
+                    FileUtils.moveDirectory(
+                            file,
+                            new File(RemoteUser.get().getSetting(
+                            UserSettings.TRASH_FOLDER)
+                            + "/"
+                            + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
-                    // when a project with the same name is in there, add the date to make it unique
-                    FileUtils.moveDirectory(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
 
+                    // when a project with the same name is in there,
+                    // add the date to make it unique
+                    FileUtils.moveDirectory(
+                            file,
+                            new File(RemoteUser.get().getSetting(
+                            UserSettings.TRASH_FOLDER)
+                            + "/"
+                            + file.getName() + "-" + new Date()));
                 }
 
             } else {
 
                 try {
 
-                    FileUtils.moveFile(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName()));
+                    FileUtils.moveFile(
+                            file,
+                            new File(RemoteUser.get().getSetting(
+                            UserSettings.TRASH_FOLDER)
+                            + "/"
+                            + file.getName()));
 
                 } catch (FileExistsException e) {
 
                     LOG.info("Destination already exists, appending Date.");
-                    FileUtils.moveFile(file, new File(RemoteUser.get().getSetting(UserSettings.TRASH_FOLDER) + "/" + file.getName() + "-" + new Date()));
+                    FileUtils.moveFile(
+                            file,
+                            new File(RemoteUser.get().getSetting(
+                            UserSettings.TRASH_FOLDER)
+                            + "/"
+                            + file.getName() + "-" + new Date()));
                 }
             }
 
@@ -856,7 +1236,7 @@ public class FileSystemManager implements IFilesystemManager {
             Item item = new Item();
             item.setId(file.getAbsolutePath());
             item.setLabel(file.getName());
-            item.setStyle(getFileType(file));
+            item.setStyle(getStyle(file));
 
             if (file.isDirectory()) {
 
@@ -945,7 +1325,8 @@ public class FileSystemManager implements IFilesystemManager {
     }
 
     @Override
-    public int move(String srcFilePath, String destFilePath) throws FilesystemManagerException {
+    public int move(String srcFilePath, String destFilePath)
+            throws FilesystemManagerException {
 
         File src = new File(srcFilePath);
         File dest = new File(destFilePath);
@@ -976,53 +1357,22 @@ public class FileSystemManager implements IFilesystemManager {
      * @param save
      */
     @Override
-    public String save(
+    public int save(
             Save save)
             throws FilesystemManagerException {
 
         File file = new File(save.getFilePath());
-        String status = null;
-
-        String userHome = RemoteUser.get().getSetting(UserSettings.USER_HOME);
-        String projectFolder = RemoteUser.get().getSetting(UserSettings.PROJECT_FOLDER);
 
         try {
 
             FileUtils.writeStringToFile(file, save.getContents());
 
-
-            // test if this is saved to the projects dir
-            // if so it should be versioned
-            // if not we don't bother
-            if (save.getFilePath().startsWith(projectFolder)) {
-
-                String relativePath = file.getAbsolutePath().replaceFirst(userHome, "").replaceFirst("/", "");
-
-                String project = relativePath.substring(0, relativePath.indexOf('/'));
-
-                LOG.info("project " + project);
-
-                String repository = userHome + "/" + project;
-
-                LOG.info("repository " + repository);
-
-                relativePath = relativePath.replaceFirst(project, "").replaceFirst("/", "");
-
-                LOG.info("relativePath " + relativePath);
-
-                status = gitManager.getStatus(file, userHome);
-
-            }
-
         } catch (IOException e) {
-            LOG.error(e);
-            throw new FilesystemManagerException(e);
-        } catch (GitManagerException e) {
             LOG.error(e);
             throw new FilesystemManagerException(e);
         }
 
-        return status;
+        return 0;
     }
 
     @Override
@@ -1154,7 +1504,7 @@ public class FileSystemManager implements IFilesystemManager {
                 // set filename as label
                 item.setLabel(fileName);
                 item.setType(ItemType.FILE);
-                item.setStyle(getFileType(new File(fileName)));
+                item.setStyle(getStyle(new File(fileName)));
 
                 if (fields.length > 1) {
 
@@ -1203,7 +1553,7 @@ public class FileSystemManager implements IFilesystemManager {
         }
     }
 
-    private String getFileType(File file) {
+    private String getStyle(File file) {
 
         if (file.isDirectory()) {
 
@@ -1216,7 +1566,7 @@ public class FileSystemManager implements IFilesystemManager {
     }
 
     @Override
-    public String create(
+    public int create(
             String filePath,
             String fileType)
             throws FilesystemManagerException {
@@ -1301,7 +1651,7 @@ public class FileSystemManager implements IFilesystemManager {
             throw new FilesystemManagerException(e);
         }
 
-        return "untracked";
+        return 0;
     }
 
     /**

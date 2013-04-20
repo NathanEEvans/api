@@ -18,6 +18,7 @@ package com.stormcloud.ide.api;
 import com.stormcloud.ide.api.filesystem.IFilesystemManager;
 import com.stormcloud.ide.api.filesystem.exception.FilesystemManagerException;
 import com.stormcloud.ide.model.filesystem.*;
+import java.util.Set;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -51,19 +52,6 @@ public class FilesystemController extends BaseController {
         response[0] = filesystem;
 
         return response;
-    }
-
-    @RequestMapping(value = "/projects/available",
-    method = RequestMethod.GET,
-    produces = "application/json")
-    @ResponseBody
-    public Item[] availableProjects()
-            throws FilesystemManagerException {
-
-
-        LOG.info("Get Available Projects.");
-
-        return manager.availableProjects();
     }
 
     @RequestMapping(value = "/bare",
@@ -128,6 +116,18 @@ public class FilesystemController extends BaseController {
         response[0] = filesystem;
 
         return response;
+    }
+
+    @RequestMapping(value = "/projects",
+    method = RequestMethod.GET,
+    produces = "application/json")
+    @ResponseBody
+    public Set<Item> getProjects()
+            throws FilesystemManagerException {
+
+        LOG.info("Get Projects");
+
+        return manager.getProjects();
     }
 
     @RequestMapping(value = "/closed",
@@ -267,7 +267,7 @@ public class FilesystemController extends BaseController {
     @RequestMapping(value = "/save", method = RequestMethod.POST,
     consumes = "application/json")
     @ResponseBody
-    public String save(
+    public int save(
             @RequestBody Save save)
             throws FilesystemManagerException {
 
@@ -303,7 +303,7 @@ public class FilesystemController extends BaseController {
     method = RequestMethod.POST,
     consumes = "application/json")
     @ResponseBody
-    public String create(
+    public int create(
             @RequestBody Create createFile)
             throws FilesystemManagerException {
 

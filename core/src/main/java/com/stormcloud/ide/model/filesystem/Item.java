@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Item {
 
     private String id;
+    private String parent;
     private String label;
     private ItemType type;
     private String style;
@@ -25,6 +26,14 @@ public class Item {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
     }
 
     public String getLabel() {

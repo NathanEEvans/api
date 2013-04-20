@@ -6,6 +6,7 @@ import com.stormcloud.ide.model.filesystem.Find;
 import com.stormcloud.ide.model.filesystem.FindResult;
 import com.stormcloud.ide.model.filesystem.Item;
 import com.stormcloud.ide.model.filesystem.Save;
+import java.util.Set;
 
 /**
  * Provides the various methods to retrieve Filesystem items.
@@ -47,11 +48,7 @@ public interface IFilesystemManager {
     Filesystem folderPicker(String root)
             throws FilesystemManagerException;
 
-    /**
-     *
-     * @return @throws FilesystemManagerException
-     */
-    Item[] availableProjects()
+    public Set<Item> getProjects()
             throws FilesystemManagerException;
 
     /**
@@ -92,7 +89,7 @@ public interface IFilesystemManager {
      * @return
      * @throws FilesystemManagerException
      */
-    String save(Save save)
+    int save(Save save)
             throws FilesystemManagerException;
 
     /**
@@ -102,7 +99,7 @@ public interface IFilesystemManager {
      * @return
      * @throws FilesystemManagerException
      */
-    String create(
+    int create(
             String filePath,
             String fileType)
             throws FilesystemManagerException;
