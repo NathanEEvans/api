@@ -48,7 +48,21 @@ public interface IFilesystemManager {
     Filesystem folderPicker(String root)
             throws FilesystemManagerException;
 
-    public Set<Item> getProjects()
+    /**
+     *
+     * @return @throws FilesystemManagerException
+     */
+    Set<Item> getProjects()
+            throws FilesystemManagerException;
+
+    /**
+     *
+     * @param projectRoot
+     * @return
+     * @throws FilesystemManagerException
+     */
+    Set<Item> getProject(
+            String projectRoot)
             throws FilesystemManagerException;
 
     /**

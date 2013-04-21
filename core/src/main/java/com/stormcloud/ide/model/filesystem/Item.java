@@ -13,10 +13,11 @@ public class Item {
 
     private String id;
     private String parent;
-    private String label;
-    private ItemType type;
-    private String style;
-    private String status;
+    private String path;
+    private String label = "Unknown";
+    private ItemType type = ItemType.NONE;
+    private String style = "";
+    private String status = "";
     private boolean directory;
     private Set<Item> children = new LinkedHashSet<Item>(0);
 
@@ -34,6 +35,14 @@ public class Item {
 
     public void setParent(String parent) {
         this.parent = parent;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     public String getLabel() {

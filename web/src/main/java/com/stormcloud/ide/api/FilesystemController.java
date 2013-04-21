@@ -130,6 +130,19 @@ public class FilesystemController extends BaseController {
         return manager.getProjects();
     }
 
+    @RequestMapping(value = "/project",
+    method = RequestMethod.POST,
+    produces = "application/json")
+    @ResponseBody
+    public Set<Item> getProject(
+            @RequestParam String filePath)
+            throws FilesystemManagerException {
+
+        LOG.info("Get Project " + filePath);
+
+        return manager.getProject(filePath);
+    }
+
     @RequestMapping(value = "/closed",
     method = RequestMethod.GET,
     produces = "application/json")
