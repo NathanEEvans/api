@@ -72,6 +72,23 @@ public class StormCloudDao implements IStormCloudDao {
     }
 
     @Override
+    public String addFriendRequest(Long userId, String userName) {
+
+        LOG.debug("Add Friend Request from " + userName + " to " + userId);
+
+        FriendRequest friendRequest = new FriendRequest();
+
+        User user = manager.find(User.class, userId);
+
+        friendRequest.setUser(user);
+        friendRequest.setUserName(userName);
+
+        manager.persist(friendRequest);
+
+        return "0";
+    }
+
+    @Override
     public User getUser(String userName) {
 
         LOG.info("Get User for [" + userName + "]");
@@ -115,7 +132,7 @@ public class StormCloudDao implements IStormCloudDao {
                 return false;
             }
 
-        } catch (NoResultException e) { 
+        } catch (NoResultException e) {
             LOG.debug("Email Address not found.");
             return false;
         }

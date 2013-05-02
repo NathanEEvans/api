@@ -46,7 +46,7 @@ public class ServicesController extends BaseController {
     private ITomcatManager tomcatManager;
 
     @RequestMapping(method = RequestMethod.GET,
-    produces = "application/json")
+            produces = "application/json")
     @ResponseBody
     public Services[] getServices()
             throws TomcatManagerException {
@@ -57,10 +57,10 @@ public class ServicesController extends BaseController {
         Services services = new Services();
 
         // create databases
-        Item databases = new Item();
-        databases.setLabel("Databases");
-        databases.setType(ItemType.NONE);
-        databases.setStyle("rdbms");
+        //Item databases = new Item();
+        //databases.setLabel("Databases");
+        //databases.setType(ItemType.NONE);
+        //databases.setStyle("rdbms");
 
         /**
          * @todo change this into rdbmsManager who will fetch database info like
@@ -79,14 +79,11 @@ public class ServicesController extends BaseController {
         //oracle.setType("oracle");
         //databases.getChildren().add(oracle);
         // add databases to services
-        services.getChildren().add(databases);
-
-
+        //services.getChildren().add(databases);
         // Web Services
         //Item webservices = new Item();
         //webservices.setLabel("Web Services");
         //webservices.setType("webServices");
-
         /**
          * @todo add some example webservices
          */
@@ -121,7 +118,6 @@ public class ServicesController extends BaseController {
         File m2 = new File(RemoteUser.get().getSetting(UserSettings.LOCAL_MAVEN_REPOSITORY));
 
         FilenameFilter filter = new FilenameFilter() {
-
             @Override
             public boolean accept(File file, String string) {
 
@@ -179,7 +175,6 @@ public class ServicesController extends BaseController {
         if (files != null) {
 
             Comparator comp = new Comparator() {
-
                 @Override
                 public int compare(Object o1, Object o2) {
                     File f1 = (File) o1;

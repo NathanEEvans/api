@@ -46,8 +46,8 @@ public class UserController extends BaseController {
     private IUserManager userManager;
 
     @RequestMapping(value = "/coders",
-    method = RequestMethod.GET,
-    produces = "application/json")
+            method = RequestMethod.GET,
+            produces = "application/json")
     @ResponseBody
     public Coder[] getCoders() {
 
@@ -56,12 +56,23 @@ public class UserController extends BaseController {
         return dao.getCoders();
     }
 
+    @RequestMapping(value = "/friend-request",
+            method = RequestMethod.POST,
+            produces = "application/json")
+    @ResponseBody
+    public String addFriendRequest(
+            @RequestParam(value = "userId", required = true) Long userId,
+            @RequestParam(value = "userName", required = true) String userName) {
+
+        return dao.addFriendRequest(userId, userName);
+    }
+
     /**
      *
      * @return
      */
     @RequestMapping(method = RequestMethod.GET,
-    produces = "application/json")
+            produces = "application/json")
     @ResponseBody
     public User getUser() {
 
@@ -72,7 +83,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/preference",
-    method = RequestMethod.POST)
+            method = RequestMethod.POST)
     @ResponseBody
     public String savePreference(
             @RequestParam(value = "key", required = true) String key,
@@ -88,7 +99,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/info",
-    method = RequestMethod.POST)
+            method = RequestMethod.POST)
     @ResponseBody
     public String saveSetting(
             @RequestParam(value = "key", required = true) String key,
@@ -104,7 +115,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/password",
-    method = RequestMethod.POST)
+            method = RequestMethod.POST)
     @ResponseBody
     public String changePassword(
             @RequestParam(value = "currentPassword", required = true) String currentPassword,
@@ -118,7 +129,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "createAccount",
-    method = RequestMethod.POST)
+            method = RequestMethod.POST)
     @ResponseBody
     public String createAccount(
             @RequestParam(value = "userName", required = true) String userName,
@@ -132,7 +143,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/delete",
-    method = RequestMethod.POST)
+            method = RequestMethod.POST)
     @ResponseBody
     public String deleteAccount(
             @RequestParam(value = "currentPassword", required = true) String currentPassword,

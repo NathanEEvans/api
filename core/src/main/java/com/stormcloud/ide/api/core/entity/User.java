@@ -28,7 +28,6 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 @SuppressWarnings("serial")
 public class User implements Serializable {
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", unique = true, nullable = false)
@@ -53,6 +52,12 @@ public class User implements Serializable {
     @Column(name = "last_login")
     @Temporal(TemporalType.DATE)
     private Date lastLogin;
+    @Column(name = "status")
+    private String status;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<Friend> friends;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Set<FriendRequest> friendRequests;
 
     public Long getId() {
         return id;
@@ -124,6 +129,30 @@ public class User implements Serializable {
 
     public void setInfo(Set<Info> info) {
         this.info = info;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Set<Friend> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(Set<Friend> friends) {
+        this.friends = friends;
+    }
+
+    public Set<FriendRequest> getFriendRequests() {
+        return friendRequests;
+    }
+
+    public void setFriendRequests(Set<FriendRequest> friendRequests) {
+        this.friendRequests = friendRequests;
     }
 
     /**

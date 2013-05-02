@@ -42,6 +42,8 @@ public interface IStormCloudDao {
 
     Coder[] getCoders();
 
+    String addFriendRequest(Long userId, String userName);
+
     void savePreference(String key, String value);
 
     void saveInfo(String key, String value);
